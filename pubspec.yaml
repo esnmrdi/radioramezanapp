@@ -1,0 +1,79 @@
+name: radioramezan
+description: A streaming radio service during Ramadan for Iranians living abroad
+
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.8.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  google_nav_bar: ^3.1.0
+  http: ^0.12.2
+  modal_bottom_sheet: ^1.0.0+1
+  preload_page_view: ^0.1.4
+  marquee_widget: ^1.0.0
+  flutter_holo_date_picker: ^0.3.0
+  intl: ^0.16.1
+  geolocator: ^6.2.0
+  google_maps_flutter: ^1.2.0
+  vector_math: ^2.0.8
+  assets_audio_player: ^2.0.13+8
+  flutter_launcher_icons: ^0.8.1
+  shared_preferences: ^0.5.12+4
+  settings_ui: ^0.6.0
+
+  cupertino_icons: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon-512x512.png"
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: Tahrir
+      fonts:
+        - asset: assets/fonts/tahrir_book.ttf
+          weight: 300
+        - asset: assets/fonts/tahrir_regular.ttf
+          weight: 400
+        - asset: assets/fonts/tahrir_medium.ttf
+          weight: 500
+        - asset: assets/fonts/tahrir_bold.ttf
+          weight: 600
+        - asset: assets/fonts/tahrir_extra_bold.ttf
+          weight: 700
+        - asset: assets/fonts/tahrir_black.ttf
+          weight: 800
+    - family: Sans
+      fonts:
+        - asset: assets/fonts/sans_mobile_ultraLight.ttf
+          weight: 200
+        - asset: assets/fonts/sans_mobile_light.ttf
+          weight: 300
+        - asset: assets/fonts/sans_mobile.ttf
+          weight: 400
+        - asset: assets/fonts/sans_mobile_medium.ttf
+          weight: 500
+        - asset: assets/fonts/sans_mobile_bold.ttf
+          weight: 600
+        - asset: assets/fonts/sans_mobile_black.ttf
+          weight: 700
+
+  assets:
+    - assets/audios/
+    - assets/icons/
+    - assets/images/
+    - assets/texts/
