@@ -31,15 +31,15 @@ class _HomePageState extends State<HomePage>
       radioItemToggle = !radioItemToggle;
     });
     horizonPaint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withOpacity(.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     verticalPaint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withOpacity(.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     sunPaint = Paint()
-      ..color = Colors.yellow.withOpacity(0.75)
+      ..color = Colors.yellow.withOpacity(.75)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
     animationController = AnimationController(
@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage>
       parent: animationController,
       curve: Curves.easeOut,
     );
-    animation = Tween(begin: 0.0, end: 0.5).animate(animation);
+    animation = Tween(begin: .0, end: .5).animate(animation);
     super.initState();
   }
 
@@ -66,35 +66,35 @@ class _HomePageState extends State<HomePage>
 
   Path drawHorizonPath(Size size) {
     Path _path = Path();
-    _path.moveTo(0, 0.5 * size.height);
-    _path.lineTo(size.width, 0.5 * size.height);
+    _path.moveTo(0, .6 * size.height);
+    _path.lineTo(size.width, .6 * size.height);
 
     return _path;
   }
 
   Path drawVerticalPaths(Size size) {
     Path _path = Path();
-    _path.moveTo(0.2 * size.width, 0.475 * size.height);
-    _path.lineTo(0.2 * size.width, 0.25 * size.height);
-    _path.moveTo(0.8 * size.width, 0.475 * size.height);
-    _path.lineTo(0.8 * size.width, 0.25 * size.height);
+    _path.moveTo(.21 * size.width, .55 * size.height);
+    _path.lineTo(.21 * size.width, .35 * size.height);
+    _path.moveTo(.79 * size.width, .55 * size.height);
+    _path.lineTo(.79 * size.width, .35 * size.height);
 
     return _path;
   }
 
   Path drawSunPath(Size size) {
     Path _path = Path();
-    _path.moveTo(0, 0.7 * size.height);
+    _path.moveTo(0, .9 * size.height);
     _path.cubicTo(
-      0.2 * size.width,
-      0.7 * size.height,
-      0.25 * size.width,
-      0.2 * size.height,
-      0.5 * size.width,
-      0.2 * size.height,
+      .2 * size.width,
+      .9 * size.height,
+      .25 * size.width,
+      .2 * size.height,
+      .5 * size.width,
+      .2 * size.height,
     );
-    _path.cubicTo(0.75 * size.width, 0.2 * size.height, 0.8 * size.width,
-        0.7 * size.height, size.width, 0.7 * size.height);
+    _path.cubicTo(.75 * size.width, .2 * size.height, .8 * size.width,
+        .9 * size.height, size.width, .9 * size.height);
 
     return _path;
   }
@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage>
     return LayoutBuilder(
       builder: (context, constraints) {
         canvasSize =
-            Size(0.85 * constraints.maxWidth, 0.4 * constraints.maxHeight);
+            Size(.85 * constraints.maxWidth, .3 * constraints.maxHeight);
         horizonPath = drawHorizonPath(canvasSize);
         verticalPaths = drawVerticalPaths(canvasSize);
         sunPath = drawSunPath(canvasSize);
@@ -121,16 +121,11 @@ class _HomePageState extends State<HomePage>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.black, RadioRamezanColors.ramady],
-              begin: const FractionalOffset(0.0, 0.0),
-              end: const FractionalOffset(0.0, 1.0),
-              stops: [0.0, 1.0],
+              begin: const FractionalOffset(.0, .0),
+              end: const FractionalOffset(.0, 1.0),
+              stops: [.0, 1.0],
               tileMode: TileMode.clamp,
             ),
-            // image: DecorationImage(
-            //   image: AssetImage('assets/images/golden_mosque_30percent.png'),
-            //   fit: BoxFit.fitWidth,
-            //   alignment: Alignment.bottomCenter,
-            // ),
           ),
           foregroundDecoration: BoxDecoration(
             image: DecorationImage(
@@ -141,170 +136,170 @@ class _HomePageState extends State<HomePage>
           child: Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                  image: AssetImage('assets/images/mosque_frame_edge.png'),
-                  fit: BoxFit.fill,
-                  alignment: Alignment.topCenter),
+                image: AssetImage('assets/images/mosque_frame_edge.png'),
+                fit: BoxFit.fill,
+                alignment: Alignment.topCenter,
+              ),
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              // mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 SizedBox(
                   height: .15 * constraints.maxHeight,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      height: .09 * constraints.maxHeight,
-                      width: (1 / 3) * constraints.maxWidth,
-                      child: Stack(
-                        alignment: AlignmentDirectional.center,
-                        children: [
-                          Image.asset('assets/images/city_frame.png'),
-                          Text(
-                            'تورنتو',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                Container(
+                  height: .28 * constraints.maxHeight,
+                  width: .85 * constraints.maxWidth,
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      Container(
+                        height: .1 * constraints.maxHeight,
+                        child: Stack(
+                          alignment: AlignmentDirectional.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/city_frame.png',
+                              fit: BoxFit.fill,
                             ),
-                          ),
-                        ],
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.location_pin,
+                                ),
+                                Text(
+                                  'تورنتو',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: .01 * constraints.maxHeight,
-                ),
-                Row(
-                  children: <Widget>[
-                    SizedBox(
-                      height: .175 * constraints.maxHeight,
-                      width: (2 / 18) * constraints.maxWidth,
-                    ),
-                    Container(
-                      height: .175 * constraints.maxHeight,
-                      width: (4 / 18) * constraints.maxWidth,
-                      child: Stack(
-                        alignment: AlignmentDirectional.center,
-                        children: [
-                          Image.asset('assets/images/date_frame.png'),
-                          Padding(
-                            padding: EdgeInsets.only(
-                                bottom: 0.04 * constraints.maxHeight),
-                            child: Text(
-                              'اردیبهشت',
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                                fontSize: 12,
+                      Positioned(
+                        right: .06 * constraints.maxWidth,
+                        top: .09 * constraints.maxHeight,
+                        child: Container(
+                          height: .16 * constraints.maxHeight,
+                          width: .22 * constraints.maxWidth,
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              Image.asset('assets/images/date_frame.png'),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: .05 * constraints.maxHeight),
+                                child: Text(
+                                  'اردیبهشت',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(
-                                top: 0.05 * constraints.maxHeight),
-                            child: Text(
-                              '26',
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: 24,
-                                color: Colors.black,
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: .07 * constraints.maxHeight),
+                                child: Text(
+                                  '26',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 28,
+                                    color: Colors.black,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: .175 * constraints.maxHeight,
-                      width: (1 / 18) * constraints.maxWidth,
-                    ),
-                    Container(
-                      height: .175 * constraints.maxHeight,
-                      width: (4 / 18) * constraints.maxWidth,
-                      child: Stack(
-                        alignment: AlignmentDirectional.center,
-                        children: [
-                          Image.asset('assets/images/date_frame.png'),
-                          Padding(
-                            padding: EdgeInsets.only(
-                                bottom: 0.04 * constraints.maxHeight),
-                            child: Text(
-                              'MAY',
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                                fontSize: 14,
+                      Positioned(
+                        top: .12 * constraints.maxHeight,
+                        child: Container(
+                          height: .16 * constraints.maxHeight,
+                          width: .22 * constraints.maxWidth,
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              Image.asset('assets/images/date_frame.png'),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: .05 * constraints.maxHeight),
+                                child: Text(
+                                  'MAY',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(
-                                top: 0.05 * constraints.maxHeight),
-                            child: Text(
-                              '10',
-                              style: TextStyle(
-                                fontFamily: '',
-                                fontWeight: FontWeight.normal,
-                                fontSize: 24,
-                                color: Colors.black,
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: .06 * constraints.maxHeight),
+                                child: Text(
+                                  '10',
+                                  style: TextStyle(
+                                    fontFamily: '',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 28,
+                                    color: Colors.black,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: .175 * constraints.maxHeight,
-                      width: (1 / 18) * constraints.maxWidth,
-                    ),
-                    Container(
-                      height: .175 * constraints.maxHeight,
-                      width: (4 / 18) * constraints.maxWidth,
-                      child: Stack(
-                        alignment: AlignmentDirectional.center,
-                        children: [
-                          Image.asset('assets/images/date_frame.png'),
-                          Padding(
-                            padding: EdgeInsets.only(
-                                bottom: 0.04 * constraints.maxHeight),
-                            child: Text(
-                              'رمضان',
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                                fontSize: 12,
+                      Positioned(
+                        left: .06 * constraints.maxWidth,
+                        top: .09 * constraints.maxHeight,
+                        child: Container(
+                          height: .16 * constraints.maxHeight,
+                          width: .22 * constraints.maxWidth,
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              Image.asset('assets/images/date_frame.png'),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: .05 * constraints.maxHeight),
+                                child: Text(
+                                  'رمضان',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(
-                                top: 0.05 * constraints.maxHeight),
-                            child: Text(
-                              '16',
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: 24,
-                                color: Colors.black,
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: .07 * constraints.maxHeight),
+                                child: Text(
+                                  '16',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 28,
+                                    color: Colors.black,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: .175 * constraints.maxHeight,
-                      width: (2 / 18) * constraints.maxWidth,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: .01 * constraints.maxHeight,
+                    ],
+                  ),
                 ),
                 Container(
-                  height: .4 * constraints.maxHeight,
+                  height: .3 * constraints.maxHeight,
                   width: .85 * constraints.maxWidth,
                   child: Stack(
                     alignment: AlignmentDirectional.topEnd,
@@ -336,81 +331,263 @@ class _HomePageState extends State<HomePage>
                           size: 24,
                         ),
                       ),
+                      Center(
+                        child: Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                children: [
+                                  Text(
+                                    '19:17',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: RadioRamezanColors.goldy,
+                                      shape: BoxShape.rectangle,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      'غروب آفتاب',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    '06:10',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: RadioRamezanColors.goldy,
+                                      shape: BoxShape.rectangle,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      'طلوع آفتاب',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: .14 * constraints.maxHeight,
+                        child: Container(
+                          width: .85 * constraints.maxWidth,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'افق',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: .2 * constraints.maxHeight,
+                        child: Container(
+                          width: .85 * constraints.maxWidth,
+                          child: Center(
+                            child: Text(
+                              'طول روز: ۷ ساعت و ۱۲ دقیقه',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: .01 * constraints.maxHeight,
+                Container(
+                  height: .1 * constraints.maxHeight,
+                  width: .85 * constraints.maxWidth,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: RadioRamezanColors.redy,
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              'اذان مغرب',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '20:04',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: Colors.blueGrey,
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              'ظهر شرعی',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '12:37',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: RadioRamezanColors.redy,
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              'اذان صبح',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '05:15',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                Card(
-                  elevation: 0,
-                  shape: Border(
-                    right: BorderSide(
-                      color: RadioRamezanColors.goldy,
-                      width: 5,
-                    ),
-                  ),
-                  color: Colors.white60,
-                  shadowColor: Color.fromRGBO(0, 0, 0, .25),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: 20,
-                  ),
-                  child: AnimatedCrossFade(
-                    duration: Duration(seconds: 1),
-                    firstChild: ListTile(
-                      leading: Image.asset('assets/images/praying_hands.jpg'),
-                      title: Text(
-                        'تلاوت قرآن کریم',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        'شهریار پرهیزگار',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(255, 0, 0, 1.0),
-                          shape: BoxShape.rectangle,
+                SizedBox(height: .01 * constraints.maxHeight),
+                Container(
+                  height: .16 * constraints.maxHeight,
+                  width: .85 * constraints.maxWidth,
+                  child: Column(
+                    children: [
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
-                        child: Text(
-                          'پخش زنده',
-                          style: TextStyle(
-                            color: Colors.white,
+                        color: Colors.white,
+                        shadowColor: Colors.black.withOpacity(.5),
+                        margin: EdgeInsets.zero,
+                        child: AnimatedCrossFade(
+                          duration: Duration(seconds: 1),
+                          firstChild: ListTile(
+                            leading:
+                                Image.asset('assets/images/praying_hands.jpg'),
+                            title: Text(
+                              'تلاوت قرآن کریم',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              'شهریار پرهیزگار',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                'پخش زنده',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    secondChild: ListTile(
-                      leading: Image.network(
-                          'http:\/\/ffmpeg.radioramezan.com:8090\/images\/logo.png'),
-                      title: Text(
-                        'دعای سحر',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        'محسن فرهمند صمیمی',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(0, 172, 255, 1.0),
-                          shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          'برنامه بعد',
-                          style: TextStyle(
-                            color: Colors.white,
+                          secondChild: ListTile(
+                            leading: Image.network(
+                                'http:\/\/ffmpeg.radioramezan.com:8090\/images\/logo.png'),
+                            title: Text(
+                              'دعای سحر',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              'محسن فرهمند صمیمی',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Color.fromRGBO(0, 172, 255, 1.0),
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                'برنامه بعد',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
+                          crossFadeState: radioItemToggle
+                              ? CrossFadeState.showFirst
+                              : CrossFadeState.showSecond,
                         ),
                       ),
-                    ),
-                    crossFadeState: radioItemToggle
-                        ? CrossFadeState.showFirst
-                        : CrossFadeState.showSecond,
+                      SizedBox(),
+                    ],
                   ),
                 ),
               ],
