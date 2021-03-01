@@ -32,11 +32,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.pop(context);
-            showMaterialModalBottomSheet(
+            showCupertinoModalBottomSheet(
               context: context,
               builder: (context) => AudioPlayer(),
               duration: Duration(milliseconds: 500),
+              expand: true,
             );
           },
         ),
