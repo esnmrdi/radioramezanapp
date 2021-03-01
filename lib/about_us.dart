@@ -12,8 +12,6 @@ class AboutUs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       child: Container(
-        height: MediaQuery.of(context).size.height -
-            MediaQuery.of(context).padding.top,
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/golden_mosque_30percent.png'),
@@ -53,11 +51,9 @@ class AboutUs extends StatelessWidget {
                       child: Column(
                         children: <Widget>[
                           Text(snapshot.data),
-                          Container(
-                            padding: EdgeInsets.symmetric(vertical: 20),
-                            child: Image.asset('assets/images/faraj.png',
-                                scale: 2),
-                          ),
+                          SizedBox(height: 20),
+                          Image.asset('assets/images/faraj.png', scale: 2),
+                          SizedBox(height: 20),
                         ],
                       ),
                     ),
