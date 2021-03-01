@@ -11,8 +11,6 @@ class MonthlyOwghat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.all(20),
-      height: MediaQuery.of(context).size.height -
-          MediaQuery.of(context).padding.top,
       child: FutureBuilder(
         future: loadTextAsset(),
         builder: (context, snapshot) {
