@@ -170,7 +170,7 @@ class Globals {
     city = Settings.getValue<City>(
         'city',
         City.fromJson(json.decode(
-            '{"country_id":"1","country_name_en":"Canada","country_name_fa":"کانادا","city_id": "3","city_name_en": "Montreal","city_name_fa":"مونترال","latitude":"45.504502","longitude":"-73.639600","time_zone":"America\/Toronto","radius":"35","url":"https:\/\/stream1.radioramezan.com:8443\/montreal.mp3"}')));
+            '{"country_id":"1","country_name_en":"Canada","country_name_fa":"کانادا","city_id": "3","city_name_en": "Montreal","city_name_fa":"مونترال","latitude":"45.504502","longitude":"-73.639600","time_zone":"America\/Toronto","radius":"35","url":"https://stream1.radioramezan.com:8443/montreal.mp3"}')));
     jalaliDate = json.encode({
       'year': Jalali.fromDateTime(DateTime.now()).formatter.yyyy,
       'month': Jalali.fromDateTime(DateTime.now()).formatter.mN,
