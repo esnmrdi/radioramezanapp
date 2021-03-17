@@ -1,5 +1,6 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:share/share.dart';
@@ -143,13 +144,13 @@ class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
                   options: CarouselOptions(
                     viewportFraction: 1,
                     initialPage: 0,
-                    enableInfiniteScroll: false,
-                    reverse: false,
+                    enableInfiniteScroll: true,
+                    reverse: true,
                     autoPlay: true,
                     autoPlayInterval: Duration(seconds: 10),
                     autoPlayAnimationDuration: Duration(seconds: 1),
                     autoPlayCurve: Curves.fastOutSlowIn,
-                    scrollDirection: Axis.vertical,
+                    scrollDirection: Axis.horizontal,
                   ),
                   itemBuilder: (BuildContext context, int index, _) {
                     return Row(
@@ -210,7 +211,7 @@ class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
                 RawMaterialButton(
                   elevation: 0,
                   child: Icon(
-                    radioItemIsLiked ? Icons.favorite : Icons.favorite_outline,
+                    radioItemIsLiked ? CupertinoIcons.suit_heart_fill : CupertinoIcons.suit_heart,
                     size: 32.0,
                     color: radioItemIsLiked ? Colors.red : Colors.white,
                   ),
@@ -225,7 +226,7 @@ class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
                 RawMaterialButton(
                   elevation: 0,
                   child: Icon(
-                    Icons.file_download,
+                    CupertinoIcons.arrow_down_to_line,
                     size: 32.0,
                     color: Colors.white,
                   ),
@@ -244,7 +245,7 @@ class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
                 RawMaterialButton(
                   elevation: 0,
                   child: Icon(
-                    Icons.share,
+                    Icons.ios_share,
                     size: 32.0,
                     color: Colors.white,
                   ),
@@ -260,7 +261,7 @@ class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
                 RawMaterialButton(
                   elevation: 0,
                   child: Icon(
-                    Icons.comment,
+                    CupertinoIcons.chat_bubble,
                     size: 32.0,
                     color: Colors.white,
                   ),
@@ -346,8 +347,8 @@ class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
                           elevation: 0,
                           child: Icon(
                             globals.radioPlayerIsMuted
-                                ? Icons.volume_mute
-                                : Icons.volume_up,
+                                ? CupertinoIcons.speaker_slash_fill
+                                : CupertinoIcons.speaker_1_fill,
                             size: 32.0,
                             color: globals.radioStreamIsLoaded
                                 ? Colors.black
