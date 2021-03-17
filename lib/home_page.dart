@@ -16,18 +16,19 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Cron midnightCron = Cron();
   Cron liveHomePageCron = Cron();
   Path horizonPath, sunPath, verticalPathOne, verticalPathTwo;
   Size canvasSize;
   Paint horizonPaint, sunPaint, verticalPaint;
   Offset sunOffset;
-  AnimationController animationController;
-  Animation animation;
+  AnimationController sunAnimationController;
+  Animation sunAnimation;
   Map<String, String> gregorianMonthNames;
   Map<String, String> hijriMonthNames;
+  Animation<double> playPauseAnimation;
+  AnimationController playPauseAnimationcontroller;
 
   Path drawHorizontalPath(double x1, double x2, double y) {
     Path path = Path();
@@ -107,6 +108,14 @@ class _HomePageState extends State<HomePage>
       '11': 'ذیقعده',
       '12': 'ذیحجه',
     };
+    playPauseAnimationcontroller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 200),
+    );
+    playPauseAnimation = CurvedAnimation(
+      curve: Curves.linear,
+      parent: playPauseAnimationcontroller,
+    );
     horizonPaint = Paint()
       ..color = Colors.white.withOpacity(.5)
       ..style = PaintingStyle.stroke
@@ -119,27 +128,27 @@ class _HomePageState extends State<HomePage>
       ..color = Colors.white.withOpacity(.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
-    animationController = AnimationController(
+    sunAnimationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 2500),
     );
-    animation = CurvedAnimation(
-      parent: animationController,
+    sunAnimation = CurvedAnimation(
+      parent: sunAnimationController,
       curve: Curves.easeOut,
     );
-    animation = Tween(
+    sunAnimation = Tween(
             begin: .0,
             end: (DateTime.now().hour * 60 + DateTime.now().minute) / 1440)
-        .animate(animation);
+        .animate(sunAnimation);
     Future.delayed(Duration(seconds: 2), () {
-      animationController.forward(from: 0);
+      sunAnimationController.forward(from: 0);
     });
     super.initState();
   }
 
   @override
   void dispose() {
-    animationController.dispose();
+    sunAnimationController.dispose();
     super.dispose();
   }
 
@@ -361,10 +370,10 @@ class _HomePageState extends State<HomePage>
                         painter: PathPainter(sunPath, sunPaint),
                       ),
                       AnimatedBuilder(
-                        animation: animationController,
+                        animation: sunAnimationController,
                         builder: (context, child) {
                           sunOffset =
-                              calculateSunPosition(sunPath, animation.value);
+                              calculateSunPosition(sunPath, sunAnimation.value);
                           sunOffset =
                               Offset(sunOffset.dx - 12, sunOffset.dy - 12);
                           return Transform.translate(
@@ -609,12 +618,11 @@ class _HomePageState extends State<HomePage>
                               shape: CircleBorder(),
                               elevation: globals.radioStreamIsLoaded ? 2 : 0,
                               child: globals.radioStreamIsLoaded
-                                  ? Icon(
-                                      globals.radioPlayerIsPaused
-                                          ? Icons.play_arrow
-                                          : Icons.pause,
+                                  ? AnimatedIcon(
+                                      icon: AnimatedIcons.play_pause,
                                       size: 36,
                                       color: RadioRamezanColors.ramady,
+                                      progress: playPauseAnimation,
                                     )
                                   : Container(
                                       height: 36,
@@ -625,8 +633,10 @@ class _HomePageState extends State<HomePage>
                               onPressed: globals.radioStreamIsLoaded
                                   ? () {
                                       if (globals.radioPlayerIsPaused) {
+                                        playPauseAnimationcontroller.forward();
                                         globals.radioPlayer.play();
                                       } else {
+                                        playPauseAnimationcontroller.reverse();
                                         globals.radioPlayer.pause();
                                       }
                                       setState(() {
