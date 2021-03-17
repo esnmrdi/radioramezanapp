@@ -1,5 +1,6 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
@@ -14,7 +15,7 @@ class PrayerView extends StatefulWidget {
   _PrayerView createState() => _PrayerView();
 }
 
-class _PrayerView extends State<PrayerView> {
+class _PrayerView extends State<PrayerView> with TickerProviderStateMixin {
   AssetsAudioPlayer prayerPlayer;
   bool showControls,
       showTranslation,
@@ -26,6 +27,8 @@ class _PrayerView extends State<PrayerView> {
   String path;
   Metas metas;
   int positionInSeconds, durationInSeconds, remainingInSeconds;
+  Animation<double> playPauseAnimation;
+  AnimationController playPauseAnimationcontroller;
 
   Future<Null> loadPrayerAudio(String path, Metas metas) async {
     try {
@@ -42,8 +45,7 @@ class _PrayerView extends State<PrayerView> {
         headPhoneStrategy: HeadPhoneStrategy.none,
       );
       setState(() {
-        durationInSeconds =
-            prayerPlayer.current.value.audio.duration.inSeconds;
+        durationInSeconds = prayerPlayer.current.value.audio.duration.inSeconds;
         prayerAudioIsLoaded = true;
       });
     } catch (error) {
@@ -70,6 +72,15 @@ class _PrayerView extends State<PrayerView> {
       album: 'رادیو رمضان',
     );
     loadPrayerAudio(path, metas);
+    playPauseAnimationcontroller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 200),
+    );
+
+    playPauseAnimation = CurvedAnimation(
+      curve: Curves.linear,
+      parent: playPauseAnimationcontroller,
+    );
     super.initState();
   }
 
@@ -184,8 +195,7 @@ class _PrayerView extends State<PrayerView> {
                               remainingInSeconds =
                                   durationInSeconds - positionInSeconds;
                               sliderProgressiveValue =
-                                  (positionInSeconds / durationInSeconds) *
-                                      100;
+                                  (positionInSeconds / durationInSeconds) * 100;
                               return Container(
                                 padding: EdgeInsets.symmetric(horizontal: 10),
                                 child: Row(
@@ -284,7 +294,7 @@ class _PrayerView extends State<PrayerView> {
                                     RawMaterialButton(
                                       elevation: 0,
                                       child: Icon(
-                                        Icons.zoom_in,
+                                        CupertinoIcons.zoom_in,
                                         size: 32.0,
                                         color: fontSize < 28
                                             ? Colors.black
@@ -304,7 +314,7 @@ class _PrayerView extends State<PrayerView> {
                                     RawMaterialButton(
                                       elevation: 0,
                                       child: Icon(
-                                        Icons.zoom_out_outlined,
+                                        CupertinoIcons.zoom_out,
                                         size: 32.0,
                                         color: fontSize > 22
                                             ? Colors.black
@@ -331,7 +341,7 @@ class _PrayerView extends State<PrayerView> {
                                     RawMaterialButton(
                                       elevation: 0,
                                       child: Icon(
-                                        Icons.forward_10,
+                                        CupertinoIcons.goforward_10,
                                         size: 32.0,
                                         color: prayerAudioIsLoaded
                                             ? Colors.black
@@ -349,7 +359,7 @@ class _PrayerView extends State<PrayerView> {
                                     RawMaterialButton(
                                       elevation: 0,
                                       child: Icon(
-                                        Icons.speed,
+                                        CupertinoIcons.speedometer,
                                         size: 32.0,
                                         // color: _prayerAudioIsLoaded
                                         //     ? Colors.black
@@ -371,12 +381,11 @@ class _PrayerView extends State<PrayerView> {
                                       ? Theme.of(context).primaryColor
                                       : Theme.of(context).disabledColor,
                                   child: prayerAudioIsLoaded
-                                      ? Icon(
-                                          prayerPlayerIsPaused
-                                              ? Icons.play_arrow
-                                              : Icons.pause,
+                                      ? AnimatedIcon(
+                                          icon: AnimatedIcons.play_pause,
                                           size: 64,
                                           color: Colors.white,
+                                          progress: playPauseAnimation,
                                         )
                                       : Container(
                                           height: 64,
@@ -396,8 +405,12 @@ class _PrayerView extends State<PrayerView> {
                                           if (prayerPlayerIsPaused) {
                                             globals.radioPlayer.pause();
                                             globals.radioPlayerIsPaused = true;
+                                            playPauseAnimationcontroller
+                                                .forward();
                                             prayerPlayer.play();
                                           } else {
+                                            playPauseAnimationcontroller
+                                                .reverse();
                                             prayerPlayer.pause();
                                           }
                                           setState(() {
@@ -415,7 +428,7 @@ class _PrayerView extends State<PrayerView> {
                                     RawMaterialButton(
                                       elevation: 0,
                                       child: Icon(
-                                        Icons.replay_10,
+                                        CupertinoIcons.gobackward_10,
                                         size: 32.0,
                                         color: prayerAudioIsLoaded
                                             ? Colors.black
@@ -434,8 +447,8 @@ class _PrayerView extends State<PrayerView> {
                                       elevation: 0,
                                       child: Icon(
                                         prayerPlayerIsMuted
-                                            ? Icons.volume_mute
-                                            : Icons.volume_up,
+                                            ? CupertinoIcons.speaker_slash_fill
+                                            : CupertinoIcons.speaker_1_fill,
                                         size: 32.0,
                                         color: prayerAudioIsLoaded
                                             ? Colors.black
@@ -465,7 +478,7 @@ class _PrayerView extends State<PrayerView> {
                                     RawMaterialButton(
                                       elevation: 0,
                                       child: Icon(
-                                        Icons.translate,
+                                        CupertinoIcons.textformat_alt,
                                         size: 32.0,
                                         color: Colors.black,
                                       ),
@@ -480,7 +493,7 @@ class _PrayerView extends State<PrayerView> {
                                     RawMaterialButton(
                                       elevation: 0,
                                       child: Icon(
-                                        Icons.close,
+                                        CupertinoIcons.xmark,
                                         size: 32.0,
                                         color: Colors.black,
                                       ),
@@ -510,7 +523,7 @@ class _PrayerView extends State<PrayerView> {
                   child: FloatingActionButton(
                     elevation: 2,
                     backgroundColor: RadioRamezanColors.ramady,
-                    child: Icon(Icons.tune),
+                    child: Icon(CupertinoIcons.control),
                     onPressed: () {
                       setState(() {
                         showControls = true;
