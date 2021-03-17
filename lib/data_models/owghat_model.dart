@@ -1,68 +1,33 @@
-class CityInfo {
-  final int cityId;
-  final String cityNameEnglish;
-  final String cityNamePersian;
-  final String timeZone;
-
-  CityInfo({
-    this.cityId,
-    this.cityNameEnglish,
-    this.cityNamePersian,
-    this.timeZone,
-  });
-
-  factory CityInfo.fromJson(Map<String, dynamic> parsedJson) {
-    return CityInfo(
-      cityId: parsedJson['city_id'],
-      cityNameEnglish: parsedJson['city_name_en'],
-      cityNamePersian: parsedJson['city_name_fa'],
-      timeZone: parsedJson['timeZone'],
-    );
-  }
-}
-
-class PrayerTimes {
-  final String date;
-  final String azanSobh;
-  final String sunrise;
-  final String azanZohr;
-  final String sunset;
-  final String azanMaghreb;
-
-  PrayerTimes({
-    this.date,
-    this.azanSobh,
-    this.sunrise,
-    this.azanZohr,
-    this.sunset,
-    this.azanMaghreb,
-  });
-
-  factory PrayerTimes.fromJson(Map<String, dynamic> parsedJson) {
-    return PrayerTimes(
-      date: parsedJson['Date'],
-      azanSobh: parsedJson['azan_sobh'],
-      sunrise: parsedJson['sunrise'],
-      azanZohr: parsedJson['zohr'],
-      sunset: parsedJson['sunset'],
-      azanMaghreb: parsedJson['maghreb'],
-    );
-  }
-}
+// loading required packages
+import 'package:intl/intl.dart' as intl;
 
 class Owghat {
-  final CityInfo cityInfo;
-  final PrayerTimes prayerTimes;
+  final String sobh;
+  final String sunrise;
+  final String zohr;
+  final String sunset;
+  final String maghreb;
+  final int dayLength;
 
   Owghat({
-    this.cityInfo,
-    this.prayerTimes,
+    this.sobh,
+    this.sunrise,
+    this.zohr,
+    this.sunset,
+    this.maghreb,
+    this.dayLength,
   });
 
   factory Owghat.fromJson(Map<String, dynamic> parsedJson) {
     return Owghat(
-      cityInfo: parsedJson['city_info'],
-      prayerTimes: parsedJson['prayerTimes'],
+      sobh: parsedJson['azan_sobh'],
+      sunrise: parsedJson['sunrise'],
+      zohr: parsedJson['zohr'],
+      sunset: parsedJson['sunset'],
+      maghreb: parsedJson['maghreb'],
+      dayLength: intl.DateFormat('HH:mm')
+          .parse(parsedJson['maghreb'])
+          .difference(intl.DateFormat('HH:mm').parse(parsedJson['azan_sobh'])).inMinutes,
     );
   }
 }
