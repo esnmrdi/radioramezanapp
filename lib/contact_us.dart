@@ -1,7 +1,7 @@
 // loading required packages
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:radioramezan/theme.dart';
 
@@ -83,8 +83,8 @@ class _ContactUs extends State<ContactUs> {
                                       backgroundColor:
                                           Color.fromRGBO(225, 48, 108, 1),
                                       radius: 42,
-                                      child: FaIcon(
-                                        FontAwesomeIcons.phone,
+                                      child: Icon(
+                                        CupertinoIcons.phone_fill,
                                         size: 36,
                                         color: Colors.white,
                                       ),
@@ -107,8 +107,8 @@ class _ContactUs extends State<ContactUs> {
                                     child: CircleAvatar(
                                       backgroundColor: RadioRamezanColors.goldy,
                                       radius: 42,
-                                      child: FaIcon(
-                                        FontAwesomeIcons.envelope,
+                                      child: Icon(
+                                        CupertinoIcons.envelope_fill,
                                         size: 36,
                                         color: Colors.white,
                                       ),
@@ -132,8 +132,8 @@ class _ContactUs extends State<ContactUs> {
                                       backgroundColor:
                                           Color.fromRGBO(0, 136, 204, 1),
                                       radius: 42,
-                                      child: FaIcon(
-                                        FontAwesomeIcons.telegramPlane,
+                                      child: Icon(
+                                        CupertinoIcons.paperplane_fill,
                                         size: 36,
                                         color: Colors.white,
                                       ),
