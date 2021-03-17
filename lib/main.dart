@@ -4,29 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:preload_page_view/preload_page_view.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-import 'package:radioramezan/custom_drawer.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
-import 'package:radioramezan/custom_app_bar.dart';
-import 'package:radioramezan/custom_bottom_navigation_bar.dart';
-import 'package:radioramezan/custom_banner.dart';
+import 'package:radioramezan/side_drawer.dart';
+import 'package:radioramezan/top_app_bar.dart';
+import 'package:radioramezan/nav_bar.dart';
+import 'package:radioramezan/advertisements.dart';
+import 'package:radioramezan/qibla.dart';
 import 'package:radioramezan/conductor.dart';
 import 'package:radioramezan/home_page.dart';
+import 'package:radioramezan/prayers.dart';
+import 'package:radioramezan/app_settings.dart';
 import 'theme.dart';
-import 'qibla.dart';
-import 'prayers.dart';
-import 'settings.dart';
 
-Future<void> main() async {
+Future<Null> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Settings.init(
+    cacheProvider: SharePreferenceCache(),
+  );
+  await globals.init();
   runApp(
     RadioRamezanApp(),
   );
-}
-
-class Main extends StatefulWidget {
-  @override
-  _MainState createState() => _MainState();
 }
 
 class RadioRamezanApp extends StatelessWidget {
@@ -42,38 +42,53 @@ class RadioRamezanApp extends StatelessWidget {
         statusBarColor: RadioRamezanColors.ramady,
       ),
     );
-    return MaterialApp(
-      title: 'رادیو رمضان',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.light,
-      home: Main(),
-      localizationsDelegates: [
-        GlobalCupertinoLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: [
-        Locale('fa', 'IR'),
-      ],
-      locale: Locale('fa', 'IR'),
+    return DynamicTheme(
+      defaultBrightness: Brightness.light,
+      data: (brightness) => ThemeData(
+        primarySwatch: RadioRamezanColors.ramady,
+        accentColor: RadioRamezanColors.ramady,
+        fontFamily: 'Sans',
+        brightness: brightness,
+      ),
+      themedWidgetBuilder: (context, theme) {
+        return MaterialApp(
+          title: 'رادیو رمضان',
+          theme: theme,
+          home: Main(),
+          localizationsDelegates: [
+            GlobalCupertinoLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: [
+            Locale('fa', 'IR'),
+          ],
+          locale: Locale('fa', 'IR'),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
+}
+
+class Main extends StatefulWidget {
+  Main({Key key, this.title}) : super(key: key);
+  final String title;
+
+  @override
+  _MainState createState() => _MainState();
 }
 
 class _MainState extends State<Main> {
   @override
   void initState() {
-    Globals.pageController = PreloadPageController(
-      initialPage: Globals.navigatorIndex,
-      keepPage: true,
-    );
     super.initState();
   }
 
   @override
   void dispose() {
-    Globals.pageController.dispose();
+    globals.pageController.dispose();
+    globals.radioPlayer.dispose();
     super.dispose();
   }
 
@@ -81,7 +96,7 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      maintainBottomViewPadding: true,
+      // maintainBottomViewPadding: true,
       child: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,32 +104,37 @@ class _MainState extends State<Main> {
           children: <Widget>[
             Expanded(
               child: Scaffold(
-                key: Globals.drawerKey,
+                key: globals.drawerKey,
                 drawerEnableOpenDragGesture: false,
-                drawer: CustomDrawer(),
-                appBar: CustomAppBar(),
+                drawer: SideDrawer(),
+                appBar: TopAppBar(),
                 body: SizedBox.expand(
                   child: PreloadPageView(
                     preloadPagesCount: 4,
-                    controller: Globals.pageController,
+                    controller: globals.pageController,
                     physics: NeverScrollableScrollPhysics(),
                     scrollDirection: Axis.horizontal,
-                    onPageChanged: (index) {
-                      setState(() => Globals.navigatorIndex = index);
+                    onPageChanged: (int index) {
+                      setState(() => globals.navigatorIndex = index);
                     },
                     children: <Widget>[
-                      qibla(context),
+                      Qibla(),
                       Conductor(),
                       HomePage(),
-                      prayers(),
-                      settings(),
+                      Prayers(),
+                      AppSettings(),
                     ],
                   ),
                 ),
-                bottomNavigationBar: CustomBottomNavigationBar(),
+                bottomNavigationBar: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    NavBar(),
+                    Advertisements(),
+                  ],
+                ),
               ),
             ),
-            CustomBanner(),
           ],
         ),
       ),
