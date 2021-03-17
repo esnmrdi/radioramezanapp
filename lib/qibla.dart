@@ -121,7 +121,7 @@ class _Qibla extends State<Qibla> {
                   mapType: MapType.hybrid,
                   zoomControlsEnabled: true,
                   zoomGesturesEnabled: true,
-                  rotateGesturesEnabled: true,
+                  rotateGesturesEnabled: false,
                   tiltGesturesEnabled: false,
                   myLocationEnabled: true,
                   myLocationButtonEnabled: false,
