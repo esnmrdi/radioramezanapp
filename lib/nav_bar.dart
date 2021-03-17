@@ -1,5 +1,6 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:radioramezan/globals.dart';
 
@@ -21,30 +22,33 @@ class NavBar extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: GNav(
-          gap: 12,
+          gap: 0,
           activeColor: Theme.of(context).brightness == Brightness.dark
               ? Theme.of(context).primaryColor
               : Colors.white,
-          iconSize: 32,
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          iconSize: 28,
+          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           duration: Duration(milliseconds: 500),
           tabBackgroundColor: Theme.of(context).accentColor,
           tabs: [
-            GButton(icon: Icons.explore, text: 'قبله'),
             GButton(
-              icon: Icons.format_list_bulleted,
+              icon: CupertinoIcons.compass_fill,
+              text: 'قبله',
+            ),
+            GButton(
+              icon: CupertinoIcons.list_bullet,
               text: 'برنامه',
             ),
             GButton(
-              icon: Icons.home,
+              icon: CupertinoIcons.house_fill,
               text: 'خانه',
             ),
             GButton(
-              icon: Icons.menu_book,
+              icon: CupertinoIcons.book_fill,
               text: 'دعا',
             ),
             GButton(
-              icon: Icons.settings,
+              icon: CupertinoIcons.gear_solid,
               text: 'تنظیم',
             ),
           ],
