@@ -4,282 +4,167 @@ import 'package:flutter/material.dart';
 import 'package:flutter_holo_date_picker/flutter_holo_date_picker.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:http/http.dart';
-import 'package:expansion_tile_card/expansion_tile_card.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:radioramezan/audio_player.dart';
-import 'package:radioramezan/main.dart';
-import 'theme.dart';
-import 'data_models/programs_model.dart';
+import 'package:radioramezan/globals.dart';
+import 'package:radioramezan/theme.dart';
+import 'package:radioramezan/data_models/radio_item_model.dart';
+import 'package:radioramezan/data_models/city_model.dart';
 
-class Conductor extends StatelessWidget {
-  Future<ProgramsList> fetchProgramsList() async {
-    final _response =
-        await get('https://m.radioramezan.com/api/radio-playlist.php?city=3');
+class Conductor extends StatefulWidget {
+  @override
+  _Conductor createState() => _Conductor();
+}
 
-    if (_response.statusCode == 200) {
-      return ProgramsList.fromJson(jsonDecode(_response.body));
+class _Conductor extends State<Conductor> {
+  List<RadioItem> selectiveRadioItemList;
+  DateTime pickedDate;
+  bool isFetching;
+
+  Future<Null> fetchRadioItemList(City city, DateTime date) async {
+    isFetching = true;
+    final response = await get(
+        'https://m.radioramezan.com/api/radio-conductor.php?city=' +
+            city.cityId.toString() +
+            '&date=' +
+            intl.DateFormat('yyyy-MM-dd').format(date));
+
+    if (response.statusCode == 200) {
+      isFetching = false;
+      setState(() {
+        if (selectiveRadioItemList != null) selectiveRadioItemList.clear();
+        selectiveRadioItemList = (json.decode(response.body) as List)
+            .map((i) => RadioItem.fromJson(i))
+            .toList();
+      });
     } else {
-      throw Exception('Failed to load the conductor!');
+      throw Exception('Failed to fetch the conductor!');
     }
   }
 
-  Future<void> datePicker(BuildContext context) async {
-    final DateTime pickedDate = await DatePicker.showSimpleDatePicker(
+  Future<Null> datePicker(BuildContext context) async {
+    DateTime date = await DatePicker.showSimpleDatePicker(
       context,
-      initialDate: DateTime.now(),
+      initialDate: pickedDate,
       firstDate: DateTime(2021),
-      lastDate: DateTime(2025),
+      lastDate: DateTime.now(),
       dateFormat: "dd-MMMM-yyyy",
       locale: DateTimePickerLocale.en_us,
-      looping: true,
+      looping: false,
       titleText: 'انتخاب تاریخ',
       confirmText: 'تایید',
       cancelText: 'انصراف',
+      textColor: RadioRamezanColors.ramady,
     );
 
-    if (pickedDate != null && pickedDate != DateTime.now()) {
-      return pickedDate;
+    if (date != null && date != pickedDate) {
+      setState(() {
+        pickedDate = date;
+        fetchRadioItemList(globals.city, pickedDate);
+      });
     }
   }
 
-  void showRadioItemModal(BuildContext context, RadioItem radioItem) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: Container(
-          margin: EdgeInsets.all(15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Image.network(radioItem.poster),
-              SizedBox(height: 10),
-              Text(
-                radioItem.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                radioItem.description,
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.schedule_rounded,
-                    color: RadioRamezanColors.ramady,
-                  ),
-                  SizedBox(width: 10),
-                  Text('پخش از'),
-                  SizedBox(width: 10),
-                  Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(0, 172, 193, 1.0),
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      intl.DateFormat.Hm()
-                          .format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                                radioItem.startPlay.toInt() * 1000),
-                          )
-                          .toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Text('تا'),
-                  SizedBox(width: 10),
-                  Container(
-                    padding: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(193, 0, 50, 1.0),
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      intl.DateFormat.Hm()
-                          .format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                                radioItem.endPlay.toInt() * 1000),
-                          )
-                          .toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    radioItem.video
-                        ? Icons.movie_creation_rounded
-                        : Icons.speaker_rounded,
-                    color: RadioRamezanColors.ramady,
-                  ),
-                  SizedBox(width: 10),
-                  Text(radioItem.video ? 'آیتم تصویری' : 'آیتم صوتی'),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    isFetching = false;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Stack(
-        children: [
-          FutureBuilder(
-            future: fetchProgramsList(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return ListView.builder(
+    return Stack(
+      children: <Widget>[
+        Container(
+          child: isFetching
+              ? Center(
+                  child: CircularProgressIndicator(),
+                )
+              : ListView.builder(
                   padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                  itemCount: snapshot.data.programs.length,
+                  itemCount: selectiveRadioItemList != null ? selectiveRadioItemList.length : globals.radioItemList.length,
                   itemBuilder: (context, index) {
-                    final GlobalKey<ExpansionTileCardState> cardKey =
-                        GlobalKey();
-                    RadioItem radioItem = snapshot.data.programs[index];
+                    RadioItem radioItem = selectiveRadioItemList != null ? selectiveRadioItemList[index] : globals.radioItemList[index];
                     return Column(
                       children: <Widget>[
-                        ExpansionTileCard(
-                          key: cardKey,
-                          initialElevation: 2,
+                        Card(
                           elevation: 2,
-                          expandedColor: RadioRamezanColors.goldy[100],
-                          borderRadius: BorderRadius.circular(5),
+                          margin: EdgeInsets.zero,
                           shadowColor: Colors.black.withOpacity(.5),
-                          leading:
-                              Image.asset('assets/images/praying_hands.jpg'),
-                          title: Text(
-                            radioItem.title,
-                            overflow: TextOverflow.ellipsis,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
                           ),
-                          subtitle: Text(
-                            radioItem.description,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Container(
-                                padding: EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  color: Color.fromRGBO(0, 172, 193, 1.0),
-                                  shape: BoxShape.rectangle,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  intl.DateFormat.Hm()
-                                      .format(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                            radioItem.startPlay.toInt() * 1000),
-                                      )
-                                      .toString(),
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
+                          child: InkWell(
+                            onTap: () {
+                              Future.delayed(
+                                Duration(milliseconds: 250),
+                                () {},
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(5),
+                            child: ListTile(
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 1,
+                                horizontal: 10,
                               ),
-                            ],
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: Image.asset(
+                                    'assets/images/praying_hands.jpg'),
+                              ),
+                              title: Text(
+                                radioItem.title,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(radioItem.description,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                  )),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Container(
+                                    padding: EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: Color.fromRGBO(0, 172, 193, 1.0),
+                                      shape: BoxShape.rectangle,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      radioItem.startHour,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          children: <Widget>[
-                            Divider(
-                              thickness: 1.0,
-                              height: 1.0,
-                            ),
-                            ButtonBar(
-                              alignment: MainAxisAlignment.spaceAround,
-                              buttonHeight: 52.0,
-                              buttonMinWidth: 90.0,
-                              children: <Widget>[
-                                FlatButton(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5)),
-                                  onPressed: () {
-                                    showRadioItemModal(context, radioItem);
-                                  },
-                                  child: Column(
-                                    children: <Widget>[
-                                      Icon(Icons.info_outline_rounded),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 2.0),
-                                      ),
-                                      Text('نمایش جزئیات'),
-                                    ],
-                                  ),
-                                ),
-                                FlatButton(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5.0)),
-                                  onPressed: () {
-                                    showCupertinoModalBottomSheet(
-                                      context: context,
-                                      builder: (context) => AudioPlayer(),
-                                      duration: Duration(milliseconds: 500),
-                                      expand: true,
-                                    );
-                                  },
-                                  child: Column(
-                                    children: <Widget>[
-                                      Icon(Icons.play_arrow_rounded),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 2.0),
-                                      ),
-                                      Text('پخش از آرشیو'),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
                         ),
                         SizedBox(height: 10),
                       ],
                     );
                   },
-                );
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text("${snapshot.error}"),
-                );
-              }
-              return Center(
-                child: CircularProgressIndicator(),
-              );
+                ),
+        ),
+        Positioned(
+          left: 10,
+          bottom: 10,
+          child: FloatingActionButton(
+            elevation: 2,
+            backgroundColor: RadioRamezanColors.ramady,
+            child: Icon(Icons.date_range),
+            onPressed: () {
+              datePicker(context);
             },
           ),
-          Positioned(
-            left: 10,
-            bottom: 10,
-            child: FloatingActionButton(
-              elevation: 2,
-              backgroundColor: RadioRamezanColors.goldy[600],
-              child: Icon(Icons.date_range_rounded),
-              onPressed: () {
-                datePicker(context);
-              },
-            ),
-          ),
-        ],
-      ),
+        )
+      ],
     );
   }
 }
