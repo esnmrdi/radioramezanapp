@@ -13,13 +13,14 @@ class RadioPlayer extends StatefulWidget {
   _RadioPlayer createState() => _RadioPlayer();
 }
 
-class _RadioPlayer extends State<RadioPlayer>
-    with SingleTickerProviderStateMixin {
+class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
   Cron liveRadioCron = Cron();
   TextEditingController recipientController, bodyController;
   String commentText;
   Metas metas;
   bool radioItemIsLiked;
+  Animation<double> playPauseAnimation;
+  AnimationController playPauseAnimationcontroller;
 
   Future<void> displayCommentDialog(BuildContext context) async {
     return showDialog(
@@ -96,6 +97,15 @@ class _RadioPlayer extends State<RadioPlayer>
     radioItemIsLiked = false;
     recipientController = TextEditingController();
     bodyController = TextEditingController();
+    playPauseAnimationcontroller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 200),
+    );
+
+    playPauseAnimation = CurvedAnimation(
+      curve: Curves.linear,
+      parent: playPauseAnimationcontroller,
+    );
     super.initState();
   }
 
@@ -169,22 +179,21 @@ class _RadioPlayer extends State<RadioPlayer>
                           child: Container(
                             padding: EdgeInsets.only(right: 10),
                             child: Text(
-                                globals.currentAndNextItem[index].description !=
-                                        ''
-                                    ? globals.currentAndNextItem[index].title +
-                                        ' (' +
-                                        globals.currentAndNextItem[index]
-                                            .description +
-                                        ')'
-                                    : globals.currentAndNextItem[index].title,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
+                              globals.currentAndNextItem[index].description !=
+                                      ''
+                                  ? globals.currentAndNextItem[index].title +
+                                      ' (' +
+                                      globals.currentAndNextItem[index]
+                                          .description +
+                                      ')'
+                                  : globals.currentAndNextItem[index].title,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
                               ),
                             ),
                           ),
-                        
+                        ),
                       ],
                     );
                   },
@@ -201,9 +210,7 @@ class _RadioPlayer extends State<RadioPlayer>
                 RawMaterialButton(
                   elevation: 0,
                   child: Icon(
-                    radioItemIsLiked
-                        ? Icons.favorite
-                        : Icons.favorite_outline,
+                    radioItemIsLiked ? Icons.favorite : Icons.favorite_outline,
                     size: 32.0,
                     color: radioItemIsLiked ? Colors.red : Colors.white,
                   ),
@@ -298,12 +305,11 @@ class _RadioPlayer extends State<RadioPlayer>
                               ? Theme.of(context).primaryColor
                               : Theme.of(context).disabledColor,
                           child: globals.radioStreamIsLoaded
-                              ? Icon(
-                                  globals.radioPlayerIsPaused
-                                      ? Icons.play_arrow
-                                      : Icons.pause,
+                              ? AnimatedIcon(
+                                  icon: AnimatedIcons.play_pause,
                                   size: 64,
                                   color: Colors.white,
+                                  progress: playPauseAnimation,
                                 )
                               : Container(
                                   height: 64,
@@ -320,8 +326,10 @@ class _RadioPlayer extends State<RadioPlayer>
                           onPressed: globals.radioStreamIsLoaded
                               ? () {
                                   if (globals.radioPlayerIsPaused) {
+                                    playPauseAnimationcontroller.forward();
                                     globals.radioPlayer.play();
                                   } else {
+                                    playPauseAnimationcontroller.reverse();
                                     globals.radioPlayer.pause();
                                   }
                                   setState(() {
