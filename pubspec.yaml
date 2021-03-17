@@ -13,24 +13,28 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  google_nav_bar: ^3.1.0
+  google_nav_bar: ^5.0.3
   http: ^0.12.2
-  modal_bottom_sheet: ^1.0.0+1
-  preload_page_view: ^0.1.4
-  marquee_widget: ^1.0.0
-  flutter_holo_date_picker: ^0.3.0
-  intl: ^0.16.1
-  geolocator: ^6.2.0
-  google_maps_flutter: ^1.2.0
+  preload_page_view: ^0.1.5
+  flutter_holo_date_picker: ^0.3.2 # do not update
+  intl: ^0.17.0
+  geolocator: ^6.2.1
+  google_maps_flutter: ^2.0.1
   vector_math: ^2.0.8
-  assets_audio_player: ^2.0.13+8
+  assets_audio_player: ^2.0.15
   flutter_launcher_icons: ^0.8.1
-  shared_preferences: ^0.5.12+4
-  settings_ui: ^0.6.0
-  url_launcher: ^5.7.10
-  expansion_tile_card: ^1.1.0
-
-  cupertino_icons: ^1.0.0
+  flutter_settings_screens: ^0.2.1+1 # do not update
+  url_launcher: ^6.0.2
+  cupertino_icons: ^1.0.2
+  package_info: ^2.0.0
+  shamsi_date: ^0.9.1
+  hijri: ^2.0.3
+  carousel_slider: ^3.0.0
+  modal_bottom_sheet: ^2.0.0
+  dynamic_theme: ^1.0.1 # do not update
+  flutter_downloader: ^1.5.2
+  share: ^2.0.1
+  cron: ^0.3.0
 
 dev_dependencies:
   flutter_test:
@@ -39,7 +43,9 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/icon-512x512.png"
+  image_path: "assets/icons/icon-512x512.png"
+  adaptive_icon_foreground: "assets/icons/adaptive-foreground-512x512.png"
+  adaptive_icon_background: "assets/icons/adaptive-background-512x512.png"
 
 flutter:
   uses-material-design: true
