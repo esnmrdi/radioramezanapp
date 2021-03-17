@@ -1,4 +1,6 @@
+// loading required packages
 import 'package:flutter/material.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 
 class RadioRamezanColors {
   static const MaterialColor ramady = MaterialColor(
@@ -48,16 +50,22 @@ class RadioRamezanColors {
   );
 }
 
-final lightTheme = ThemeData(
-  primaryColor: RadioRamezanColors.ramady,
-  accentColor: RadioRamezanColors.ramady,
-  fontFamily: 'Sans',
-  brightness: Brightness.light,
-);
+// final lightTheme = ThemeData(
+//   primaryColor: RadioRamezanColors.ramady,
+//   accentColor: RadioRamezanColors.ramady,
+//   fontFamily: 'Sans',
+//   brightness: Brightness.light,
+// );
 
-final darkTheme = ThemeData(
-  primaryColor: RadioRamezanColors.ramady,
-  accentColor: RadioRamezanColors.ramady,
-  fontFamily: 'Sans',
-  brightness: Brightness.dark,
-);
+// final darkTheme = ThemeData(
+//   primaryColor: RadioRamezanColors.ramady,
+//   accentColor: RadioRamezanColors.ramady,
+//   fontFamily: 'Sans',
+//   brightness: Brightness.dark,
+// );
+
+void toggleBrightness(BuildContext context, bool value) {
+  DynamicTheme.of(context).setBrightness(
+    value ? Brightness.dark : Brightness.light,
+  );
+}
