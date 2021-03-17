@@ -150,8 +150,7 @@ class Globals {
               int.parse(radioItemList[i].startHour.split(':')[1]);
       if (i < radioItemList.length - 1) {
         nextStartInMinutes =
-            int.parse(radioItemList[i + 1].startHour.split(':')[0]) *
-                    60 +
+            int.parse(radioItemList[i + 1].startHour.split(':')[0]) * 60 +
                 int.parse(radioItemList[i + 1].startHour.split(':')[1]);
         if (nowInMinutes >= currentStartInMinutes &&
             nowInMinutes < nextStartInMinutes) {
@@ -186,8 +185,10 @@ class Globals {
       'month': HijriCalendar.fromDate(DateTime.now()).hMonth.toString(),
       'day': HijriCalendar.fromDate(DateTime.now()).hDay.toString()
     });
-    await fetchOwghat(city);
-    await fetchRadioItemList(city);
+    await Future.wait([
+      fetchOwghat(city),
+      fetchRadioItemList(city),
+    ]);
   }
 
   Future<Null> init() async {
@@ -196,12 +197,6 @@ class Globals {
       initialPage: navigatorIndex,
       keepPage: true,
     );
-    await midnightCron();
-    await fetchAdList(city);
-    await fetchCityList();
-    await fetchOwghatList(city);
-    await loadPrayerList();
-    await FlutterDownloader.initialize();
     radioPlayer = AssetsAudioPlayer.newPlayer();
     radioStreamIsLoaded = false;
     radioPlayerIsMuted = false;
@@ -211,7 +206,15 @@ class Globals {
       artist: 'رادیو رمضان',
       album: 'رادیو رمضان',
     );
-    await loadRadioStream(city, metas);
+    await Future.wait([
+      midnightCron(),
+      fetchAdList(city),
+      fetchCityList(),
+      fetchOwghatList(city),
+      loadPrayerList(),
+      FlutterDownloader.initialize(),
+      loadRadioStream(city, metas),
+    ]);
     currentAndNextItem = findCurrentAndNextItem();
     liveCron.schedule(Schedule.parse('*/1 * * * *'), () async {
       currentAndNextItem = findCurrentAndNextItem();
