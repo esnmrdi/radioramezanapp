@@ -84,7 +84,7 @@ class _ContactUs extends State<ContactUs> {
                                           Color.fromRGBO(225, 48, 108, 1),
                                       radius: 42,
                                       child: Icon(
-                                        CupertinoIcons.phone_fill,
+                                        CupertinoIcons.phone,
                                         size: 36,
                                         color: Colors.white,
                                       ),
@@ -108,7 +108,7 @@ class _ContactUs extends State<ContactUs> {
                                       backgroundColor: RadioRamezanColors.goldy,
                                       radius: 42,
                                       child: Icon(
-                                        CupertinoIcons.envelope_fill,
+                                        CupertinoIcons.mail,
                                         size: 36,
                                         color: Colors.white,
                                       ),
@@ -133,7 +133,7 @@ class _ContactUs extends State<ContactUs> {
                                           Color.fromRGBO(0, 136, 204, 1),
                                       radius: 42,
                                       child: Icon(
-                                        CupertinoIcons.paperplane_fill,
+                                        CupertinoIcons.paperplane,
                                         size: 36,
                                         color: Colors.white,
                                       ),

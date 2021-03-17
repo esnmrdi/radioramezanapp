@@ -2,6 +2,7 @@
 import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:vector_math/vector_math.dart' as vmath;
@@ -169,7 +170,7 @@ class _Qibla extends State<Qibla> {
                 child: FloatingActionButton(
                   elevation: 2,
                   backgroundColor: RadioRamezanColors.ramady,
-                  child: Icon(Icons.gps_fixed),
+                  child: Icon(CupertinoIcons.scope),
                   onPressed: () {
                     focusOnUserPosition();
                   },

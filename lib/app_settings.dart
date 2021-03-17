@@ -1,5 +1,6 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/theme.dart';
 
@@ -34,7 +35,7 @@ class _AppSettings extends State<AppSettings> {
                 subtitle: 'انتخاب وضعیت تاریک / روشن',
                 enabledLabel: 'فعال',
                 disabledLabel: 'غیرفعال',
-                leading: Icon(Icons.format_paint),
+                leading: Icon(Theme.of(context).brightness ==  Brightness.light ? CupertinoIcons.lightbulb : CupertinoIcons.lightbulb_slash),
                 onChange: (value) {
                   Future.delayed(Duration(milliseconds: 250), () {
                     toggleBrightness(context, value);
@@ -83,13 +84,13 @@ class _AppSettings extends State<AppSettings> {
                 subtitle: 'فعال سازی رادیو پیش از اذان',
                 enabledLabel: 'فعال',
                 disabledLabel: 'غیرفعال',
-                leading: Icon(Icons.alarm_on),
+                leading: Icon(CupertinoIcons.alarm),
                 onChange: (value) {
                   debugPrint('$value');
                 },
                 childrenIfEnabled: <Widget>[
                   CheckboxSettingsTile(
-                    leading: Icon(Icons.wb_twighlight),
+                    leading: Icon(CupertinoIcons.sunrise),
                     settingKey: 'autoStartupSobhEnabled',
                     title: 'اذان صبح',
                     onChange: (value) {
@@ -97,7 +98,7 @@ class _AppSettings extends State<AppSettings> {
                     },
                   ),
                   CheckboxSettingsTile(
-                    leading: Icon(Icons.wb_sunny),
+                    leading: Icon(CupertinoIcons.sun_max),
                     settingKey: 'autoStartupZohrEnabled',
                     title: 'اذان ظهر',
                     onChange: (value) {
@@ -105,7 +106,7 @@ class _AppSettings extends State<AppSettings> {
                     },
                   ),
                   CheckboxSettingsTile(
-                    leading: Icon(Icons.nights_stay),
+                    leading: Icon(CupertinoIcons.sunset),
                     settingKey: 'autoStartupMaghrebEnabled',
                     title: 'اذان مغرب',
                     onChange: (value) {
@@ -119,7 +120,7 @@ class _AppSettings extends State<AppSettings> {
                     min: 0,
                     max: 60,
                     step: 10,
-                    leading: Icon(Icons.hourglass_top),
+                    leading: Icon(CupertinoIcons.hourglass),
                     onChangeEnd: (value) {
                       debugPrint('$value');
                     },
@@ -132,7 +133,7 @@ class _AppSettings extends State<AppSettings> {
                 subtitle: 'توقف پخش پس از مدت معین',
                 enabledLabel: 'فعال',
                 disabledLabel: 'غیرفعال',
-                leading: Icon(Icons.timer),
+                leading: Icon(CupertinoIcons.timer),
                 onChange: (value) {
                   debugPrint('$value');
                 },
@@ -144,7 +145,7 @@ class _AppSettings extends State<AppSettings> {
                     min: 0,
                     max: 60,
                     step: 10,
-                    leading: Icon(Icons.hourglass_top),
+                    leading: Icon(CupertinoIcons.hourglass),
                     onChangeEnd: (value) {
                       debugPrint('$value');
                     },

@@ -1,5 +1,6 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:package_info/package_info.dart';
 import 'package:share/share.dart';
@@ -50,7 +51,7 @@ class SideDrawer extends StatelessWidget {
                 ),
               ),
               ListTile(
-                leading: Icon(Icons.format_list_numbered_rtl),
+                leading: Icon(CupertinoIcons.list_bullet),
                 title: Text(
                   'اوقات شرعی ماه جاری',
                   style: TextStyle(
@@ -74,7 +75,7 @@ class SideDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.monetization_on),
+                leading: Icon(CupertinoIcons.money_dollar_circle),
                 title: Text(
                   'حمایت مالی',
                   style: TextStyle(
@@ -98,7 +99,7 @@ class SideDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.share),
+                leading: Icon(Icons.ios_share),
                 title: Text(
                   'معرفی به دیگران',
                   style: TextStyle(
@@ -120,7 +121,7 @@ class SideDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.info),
+                leading: Icon(CupertinoIcons.info),
                 title: Text(
                   'درباره ما',
                   style: TextStyle(
@@ -144,7 +145,7 @@ class SideDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.email),
+                leading: Icon(CupertinoIcons.mail),
                 title: Text(
                   'ارتباط با ما',
                   style: TextStyle(
@@ -168,7 +169,7 @@ class SideDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.help),
+                leading: Icon(CupertinoIcons.question_circle),
                 title: Text(
                   'راهنمای استفاده',
                   style: TextStyle(

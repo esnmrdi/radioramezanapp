@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cron/cron.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -382,7 +383,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           );
                         },
                         child: Icon(
-                          Icons.wb_sunny,
+                          CupertinoIcons.sun_max_fill,
                           color: Colors.white,
                           size: 24,
                         ),
@@ -653,7 +654,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 options: CarouselOptions(
                                   viewportFraction: 1,
                                   initialPage: 0,
-                                  enableInfiniteScroll: false,
+                                  enableInfiniteScroll: true,
                                   reverse: false,
                                   autoPlay: true,
                                   autoPlayInterval: Duration(seconds: 10),

@@ -1,5 +1,6 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/data_models/prayer_model.dart';
@@ -131,7 +132,7 @@ class _Prayers extends State<Prayers> {
                         ),
                         child: ListTile(
                           leading: Icon(
-                            Icons.search,
+                            CupertinoIcons.search,
                             size: 32.0,
                             color: Colors.black,
                           ),
@@ -145,7 +146,7 @@ class _Prayers extends State<Prayers> {
                           ),
                           trailing: IconButton(
                             icon: Icon(
-                              Icons.close,
+                              CupertinoIcons.xmark,
                               size: 32.0,
                               color: Colors.black,
                             ),
@@ -169,7 +170,7 @@ class _Prayers extends State<Prayers> {
                 child: FloatingActionButton(
                   elevation: 2,
                   backgroundColor: RadioRamezanColors.ramady,
-                  child: Icon(Icons.search),
+                  child: Icon(CupertinoIcons.search),
                   onPressed: () {
                     setState(() {
                       showSearchBox = true;

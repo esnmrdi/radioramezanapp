@@ -1,5 +1,6 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/radio.dart';
@@ -18,7 +19,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       leading: IconButton(
         icon: Icon(
-          Icons.menu,
+          CupertinoIcons.line_horizontal_3,
           color: Colors.white,
         ),
         onPressed: () {
@@ -28,7 +29,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: <Widget>[
         IconButton(
           icon: Icon(
-            Icons.radio,
+            CupertinoIcons.antenna_radiowaves_left_right,
             color: Colors.white,
           ),
           onPressed: () {
