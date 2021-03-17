@@ -1,7 +1,14 @@
 // loading required packages
 import 'dart:async';
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cron/cron.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:radioramezan/globals.dart';
+import 'package:radioramezan/path_painter.dart';
+import 'package:radioramezan/radio.dart';
 import 'theme.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,81 +18,37 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  bool radioItemToggle;
-  Timer radioItemTimer;
-  Path horizonPath;
-  Path verticalPaths;
-  Path sunPath;
+  Cron midnightCron = Cron();
+  Cron liveHomePageCron = Cron();
+  Path horizonPath, sunPath, verticalPathOne, verticalPathTwo;
   Size canvasSize;
-  Paint horizonPaint;
-  Paint verticalPaint;
-  Paint sunPaint;
+  Paint horizonPaint, sunPaint, verticalPaint;
   Offset sunOffset;
   AnimationController animationController;
   Animation animation;
+  Map<String, String> gregorianMonthNames;
+  Map<String, String> hijriMonthNames;
 
-  @override
-  void initState() {
-    radioItemToggle = true;
-    radioItemTimer = Timer.periodic(Duration(seconds: 5), (timer) {
-      radioItemToggle = !radioItemToggle;
-    });
-    horizonPaint = Paint()
-      ..color = Colors.white.withOpacity(.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    verticalPaint = Paint()
-      ..color = Colors.white.withOpacity(.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    sunPaint = Paint()
-      ..color = Colors.yellow.withOpacity(.75)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    animationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 2500),
-    );
-    animation = CurvedAnimation(
-      parent: animationController,
-      curve: Curves.easeOut,
-    );
-    animation = Tween(begin: .0, end: .5).animate(animation);
-    super.initState();
+  Path drawHorizontalPath(double x1, double x2, double y) {
+    Path path = Path();
+    path.moveTo(x1, y);
+    path.lineTo(x2, y);
+
+    return path;
   }
 
-  @override
-  void dispose() {
-    if (radioItemTimer != null) {
-      radioItemTimer.cancel();
-      radioItemTimer = null;
-    }
-    animationController.dispose();
-    super.dispose();
-  }
+  Path drawVerticalPath(double x, double y1, double y2) {
+    Path path = Path();
+    path.moveTo(x, y1);
+    path.lineTo(x, y2);
 
-  Path drawHorizonPath(Size size) {
-    Path _path = Path();
-    _path.moveTo(0, .6 * size.height);
-    _path.lineTo(size.width, .6 * size.height);
-
-    return _path;
-  }
-
-  Path drawVerticalPaths(Size size) {
-    Path _path = Path();
-    _path.moveTo(.21 * size.width, .55 * size.height);
-    _path.lineTo(.21 * size.width, .35 * size.height);
-    _path.moveTo(.79 * size.width, .55 * size.height);
-    _path.lineTo(.79 * size.width, .35 * size.height);
-
-    return _path;
+    return path;
   }
 
   Path drawSunPath(Size size) {
-    Path _path = Path();
-    _path.moveTo(0, .9 * size.height);
-    _path.cubicTo(
+    Path path = Path();
+    path.moveTo(0, .9 * size.height);
+    path.cubicTo(
       .2 * size.width,
       .9 * size.height,
       .25 * size.width,
@@ -93,10 +56,10 @@ class _HomePageState extends State<HomePage>
       .5 * size.width,
       .2 * size.height,
     );
-    _path.cubicTo(.75 * size.width, .2 * size.height, .8 * size.width,
+    path.cubicTo(.75 * size.width, .2 * size.height, .8 * size.width,
         .9 * size.height, size.width, .9 * size.height);
 
-    return _path;
+    return path;
   }
 
   Offset calculateSunPosition(path, value) {
@@ -108,22 +71,102 @@ class _HomePageState extends State<HomePage>
   }
 
   @override
+  void initState() {
+    midnightCron.schedule(Schedule.parse('0 0 * * *'), () async {
+      await globals.midnightCron();
+      setState(() {});
+    });
+    liveHomePageCron.schedule(Schedule.parse('*/1 * * * *'), () async {
+      setState(() {});
+    });
+    gregorianMonthNames = {
+      '1': 'JAN',
+      '2': 'FEB',
+      '3': 'MAR',
+      '4': 'APR',
+      '5': 'MAY',
+      '6': 'JUN',
+      '7': 'JUL',
+      '8': 'AUG',
+      '9': 'SEP',
+      '10': 'OCT',
+      '11': 'NOV',
+      '12': 'DEC',
+    };
+    hijriMonthNames = {
+      '1': 'محرم',
+      '2': 'صفر',
+      '3': 'ربیع الاول',
+      '4': 'ربیع الثانی',
+      '5': 'جمادی الاول',
+      '6': 'جمادی الثانی',
+      '7': 'رجب',
+      '8': 'شعبان',
+      '9': 'رمضان',
+      '10': 'شوال',
+      '11': 'ذیقعده',
+      '12': 'ذیحجه',
+    };
+    horizonPaint = Paint()
+      ..color = Colors.white.withOpacity(.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    sunPaint = Paint()
+      ..color = Colors.yellow.withOpacity(.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    verticalPaint = Paint()
+      ..color = Colors.white.withOpacity(.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 2500),
+    );
+    animation = CurvedAnimation(
+      parent: animationController,
+      curve: Curves.easeOut,
+    );
+    animation = Tween(
+            begin: .0,
+            end: (DateTime.now().hour * 60 + DateTime.now().minute) / 1440)
+        .animate(animation);
+    Future.delayed(Duration(seconds: 2), () {
+      animationController.forward(from: 0);
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    animationController.forward(from: 0);
     return LayoutBuilder(
       builder: (context, constraints) {
         canvasSize =
             Size(.85 * constraints.maxWidth, .3 * constraints.maxHeight);
-        horizonPath = drawHorizonPath(canvasSize);
-        verticalPaths = drawVerticalPaths(canvasSize);
+        horizonPath =
+            drawHorizontalPath(0, canvasSize.width, .6 * canvasSize.height);
+        verticalPathOne = drawVerticalPath(.21 * canvasSize.width,
+            .32 * canvasSize.height, .55 * canvasSize.height);
+        verticalPathTwo = drawVerticalPath(.79 * canvasSize.width,
+            .32 * canvasSize.height, .55 * canvasSize.height);
         sunPath = drawSunPath(canvasSize);
         return Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.black, RadioRamezanColors.ramady],
-              begin: const FractionalOffset(.0, .0),
-              end: const FractionalOffset(.0, 1.0),
-              stops: [.0, 1.0],
+            gradient: RadialGradient(
+              center: Alignment.topCenter,
+              colors: [
+                RadioRamezanColors.ramady,
+                Colors.black,
+                RadioRamezanColors.ramady,
+              ],
+              radius: 1.5,
+              stops: [.0, .7, 1.0],
               tileMode: TileMode.clamp,
             ),
           ),
@@ -142,7 +185,6 @@ class _HomePageState extends State<HomePage>
               ),
             ),
             child: Column(
-              // mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 SizedBox(
@@ -166,14 +208,14 @@ class _HomePageState extends State<HomePage>
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.location_pin,
-                                ),
                                 Text(
-                                  'تورنتو',
+                                  globals.city.countryNameFa +
+                                      ' | ' +
+                                      globals.city.cityNameFa,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ],
@@ -195,7 +237,7 @@ class _HomePageState extends State<HomePage>
                                 padding: EdgeInsets.only(
                                     bottom: .05 * constraints.maxHeight),
                                 child: Text(
-                                  'اردیبهشت',
+                                  json.decode(globals.jalaliDate)['month'],
                                   style: TextStyle(
                                     fontWeight: FontWeight.normal,
                                     color: Colors.white,
@@ -205,12 +247,12 @@ class _HomePageState extends State<HomePage>
                               ),
                               Padding(
                                 padding: EdgeInsets.only(
-                                    top: .07 * constraints.maxHeight),
+                                    top: .06 * constraints.maxHeight),
                                 child: Text(
-                                  '26',
+                                  json.decode(globals.jalaliDate)['day'],
                                   style: TextStyle(
                                     fontWeight: FontWeight.normal,
-                                    fontSize: 28,
+                                    fontSize: 24,
                                     color: Colors.black,
                                   ),
                                 ),
@@ -232,11 +274,12 @@ class _HomePageState extends State<HomePage>
                                 padding: EdgeInsets.only(
                                     bottom: .05 * constraints.maxHeight),
                                 child: Text(
-                                  'MAY',
+                                  gregorianMonthNames[json
+                                      .decode(globals.gregorianDate)['month']],
                                   style: TextStyle(
                                     fontWeight: FontWeight.normal,
                                     color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ),
@@ -244,11 +287,11 @@ class _HomePageState extends State<HomePage>
                                 padding: EdgeInsets.only(
                                     top: .06 * constraints.maxHeight),
                                 child: Text(
-                                  '10',
+                                  json.decode(globals.gregorianDate)['day'],
                                   style: TextStyle(
                                     fontFamily: '',
                                     fontWeight: FontWeight.normal,
-                                    fontSize: 28,
+                                    fontSize: 24,
                                     color: Colors.black,
                                   ),
                                 ),
@@ -271,7 +314,8 @@ class _HomePageState extends State<HomePage>
                                 padding: EdgeInsets.only(
                                     bottom: .05 * constraints.maxHeight),
                                 child: Text(
-                                  'رمضان',
+                                  hijriMonthNames[
+                                      json.decode(globals.hijriDate)['month']],
                                   style: TextStyle(
                                     fontWeight: FontWeight.normal,
                                     color: Colors.white,
@@ -281,12 +325,12 @@ class _HomePageState extends State<HomePage>
                               ),
                               Padding(
                                 padding: EdgeInsets.only(
-                                    top: .07 * constraints.maxHeight),
+                                    top: .06 * constraints.maxHeight),
                                 child: Text(
-                                  '16',
+                                  json.decode(globals.hijriDate)['day'],
                                   style: TextStyle(
                                     fontWeight: FontWeight.normal,
-                                    fontSize: 28,
+                                    fontSize: 24,
                                     color: Colors.black,
                                   ),
                                 ),
@@ -308,7 +352,10 @@ class _HomePageState extends State<HomePage>
                         painter: PathPainter(horizonPath, horizonPaint),
                       ),
                       CustomPaint(
-                        painter: PathPainter(verticalPaths, verticalPaint),
+                        painter: PathPainter(verticalPathOne, verticalPaint),
+                      ),
+                      CustomPaint(
+                        painter: PathPainter(verticalPathTwo, verticalPaint),
                       ),
                       CustomPaint(
                         painter: PathPainter(sunPath, sunPaint),
@@ -326,7 +373,7 @@ class _HomePageState extends State<HomePage>
                           );
                         },
                         child: Icon(
-                          Icons.wb_sunny_rounded,
+                          Icons.wb_sunny,
                           color: Colors.white,
                           size: 24,
                         ),
@@ -339,16 +386,16 @@ class _HomePageState extends State<HomePage>
                               Column(
                                 children: [
                                   Text(
-                                    '19:17',
+                                    globals.owghat.sunset,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 14,
+                                      fontSize: 16,
                                     ),
                                   ),
                                   Container(
                                     padding: EdgeInsets.all(5),
                                     decoration: BoxDecoration(
-                                      color: RadioRamezanColors.goldy,
+                                      color: RadioRamezanColors.goldy[800],
                                       shape: BoxShape.rectangle,
                                       borderRadius: BorderRadius.circular(5),
                                     ),
@@ -365,16 +412,16 @@ class _HomePageState extends State<HomePage>
                               Column(
                                 children: [
                                   Text(
-                                    '06:10',
+                                    globals.owghat.sunrise,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 14,
+                                      fontSize: 16,
                                     ),
                                   ),
                                   Container(
                                     padding: EdgeInsets.all(5),
                                     decoration: BoxDecoration(
-                                      color: RadioRamezanColors.goldy,
+                                      color: RadioRamezanColors.goldy[800],
                                       shape: BoxShape.rectangle,
                                       borderRadius: BorderRadius.circular(5),
                                     ),
@@ -414,7 +461,7 @@ class _HomePageState extends State<HomePage>
                           width: .85 * constraints.maxWidth,
                           child: Center(
                             child: Text(
-                              'طول روز: ۷ ساعت و ۱۲ دقیقه',
+                              'طول روز: ${(globals.owghat.dayLength / 60).truncate()} ساعت و ${globals.owghat.dayLength % 60} دقیقه',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -437,7 +484,7 @@ class _HomePageState extends State<HomePage>
                           Container(
                             padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
-                              color: RadioRamezanColors.redy,
+                              color: Colors.cyan,
                               shape: BoxShape.rectangle,
                               borderRadius: BorderRadius.circular(5),
                             ),
@@ -450,10 +497,10 @@ class _HomePageState extends State<HomePage>
                             ),
                           ),
                           Text(
-                            '20:04',
+                            globals.owghat.maghreb,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -463,7 +510,7 @@ class _HomePageState extends State<HomePage>
                           Container(
                             padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
-                              color: Colors.blueGrey,
+                              color: Colors.indigo,
                               shape: BoxShape.rectangle,
                               borderRadius: BorderRadius.circular(5),
                             ),
@@ -476,10 +523,10 @@ class _HomePageState extends State<HomePage>
                             ),
                           ),
                           Text(
-                            '12:37',
+                            globals.owghat.zohr,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -489,7 +536,7 @@ class _HomePageState extends State<HomePage>
                           Container(
                             padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
-                              color: RadioRamezanColors.redy,
+                              color: Colors.cyan,
                               shape: BoxShape.rectangle,
                               borderRadius: BorderRadius.circular(5),
                             ),
@@ -502,10 +549,10 @@ class _HomePageState extends State<HomePage>
                             ),
                           ),
                           Text(
-                            '05:15',
+                            globals.owghat.sobh,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -515,81 +562,143 @@ class _HomePageState extends State<HomePage>
                 ),
                 SizedBox(height: .01 * constraints.maxHeight),
                 Container(
-                  height: .16 * constraints.maxHeight,
-                  width: .85 * constraints.maxWidth,
-                  child: Column(
-                    children: [
-                      Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        color: Colors.white,
-                        shadowColor: Colors.black.withOpacity(.5),
-                        margin: EdgeInsets.zero,
-                        child: AnimatedCrossFade(
-                          duration: Duration(seconds: 1),
-                          firstChild: ListTile(
-                            leading:
-                                Image.asset('assets/images/praying_hands.jpg'),
-                            title: Text(
-                              'تلاوت قرآن کریم',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              'شهریار پرهیزگار',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: Container(
-                              padding: EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(
-                                'پخش زنده',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          secondChild: ListTile(
-                            leading: Image.network(
-                                'http:\/\/ffmpeg.radioramezan.com:8090\/images\/logo.png'),
-                            title: Text(
-                              'دعای سحر',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              'محسن فرهمند صمیمی',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: Container(
-                              padding: EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: Color.fromRGBO(0, 172, 255, 1.0),
-                                shape: BoxShape.rectangle,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(
-                                'برنامه بعد',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          crossFadeState: radioItemToggle
-                              ? CrossFadeState.showFirst
-                              : CrossFadeState.showSecond,
+                  height: .14 * constraints.maxHeight,
+                  width: .9 * constraints.maxWidth,
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    color: Colors.white,
+                    shadowColor: Colors.black.withOpacity(.5),
+                    margin: EdgeInsets.symmetric(
+                        horizontal: .025 * constraints.maxWidth),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(
+                              'assets/images/golden_mosque_20percent.png'),
+                          fit: BoxFit.fitHeight,
+                          alignment: Alignment.bottomLeft,
                         ),
                       ),
-                      SizedBox(),
-                    ],
+                      child: InkWell(
+                        onTap: () {
+                          Future.delayed(
+                            Duration(milliseconds: 250),
+                            () {
+                              showMaterialModalBottomSheet(
+                                context: context,
+                                builder: (context) => RadioPlayer(),
+                                duration: Duration(milliseconds: 500),
+                                enableDrag: true,
+                              );
+                            },
+                          );
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            SizedBox(width: 5),
+                            RawMaterialButton(
+                              constraints: BoxConstraints(
+                                minWidth: 64,
+                                minHeight: 64,
+                              ),
+                              padding: EdgeInsets.all(14),
+                              shape: CircleBorder(),
+                              elevation: globals.radioStreamIsLoaded ? 2 : 0,
+                              child: globals.radioStreamIsLoaded
+                                  ? Icon(
+                                      globals.radioPlayerIsPaused
+                                          ? Icons.play_arrow
+                                          : Icons.pause,
+                                      size: 36,
+                                      color: RadioRamezanColors.ramady,
+                                    )
+                                  : Container(
+                                      height: 36,
+                                      width: 36,
+                                      // padding: EdgeInsets.all(18),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                              onPressed: globals.radioStreamIsLoaded
+                                  ? () {
+                                      if (globals.radioPlayerIsPaused) {
+                                        globals.radioPlayer.play();
+                                      } else {
+                                        globals.radioPlayer.pause();
+                                      }
+                                      setState(() {
+                                        globals.radioPlayerIsPaused =
+                                            !globals.radioPlayerIsPaused;
+                                      });
+                                    }
+                                  : null,
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: CarouselSlider.builder(
+                                itemCount: globals.currentAndNextItem.length,
+                                options: CarouselOptions(
+                                  viewportFraction: 1,
+                                  initialPage: 0,
+                                  enableInfiniteScroll: false,
+                                  reverse: false,
+                                  autoPlay: true,
+                                  autoPlayInterval: Duration(seconds: 10),
+                                  autoPlayAnimationDuration:
+                                      Duration(seconds: 1),
+                                  autoPlayCurve: Curves.fastOutSlowIn,
+                                  scrollDirection: Axis.vertical,
+                                ),
+                                itemBuilder:
+                                    (BuildContext context, int index, _) {
+                                  return ListTile(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 1,
+                                      horizontal: 10,
+                                    ),
+                                    title: Text(
+                                      globals.currentAndNextItem[index].title,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    subtitle: globals.currentAndNextItem[index]
+                                                .description !=
+                                            ''
+                                        ? Text(
+                                            globals.currentAndNextItem[index]
+                                                .description,
+                                            overflow: TextOverflow.ellipsis,
+                                          )
+                                        : null,
+                                    trailing: Container(
+                                      padding: EdgeInsets.all(5),
+                                      decoration: BoxDecoration(
+                                        color: index == 0
+                                            ? Colors.red
+                                            : Colors.lightGreen,
+                                        shape: BoxShape.rectangle,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Text(
+                                        index == 0 ? 'پخش زنده' : 'برنامه بعد',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
+                SizedBox(height: .02 * constraints.maxHeight),
               ],
             ),
           ),
@@ -597,19 +706,4 @@ class _HomePageState extends State<HomePage>
       },
     );
   }
-}
-
-class PathPainter extends CustomPainter {
-  Path _path;
-  Paint _paint;
-
-  PathPainter(this._path, this._paint);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawPath(this._path, this._paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
