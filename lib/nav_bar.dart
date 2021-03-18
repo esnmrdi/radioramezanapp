@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:radioramezan/globals.dart';
+import 'package:radioramezan/theme.dart';
 
 class NavBar extends StatelessWidget {
   @override
@@ -11,7 +12,7 @@ class NavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
             ? Color.fromRGBO(33, 33, 33, 1.0)
-            : Colors.white,
+            : Theme.of(context).primaryColor,
         boxShadow: [
           BoxShadow(
             blurRadius: 20,
@@ -24,32 +25,37 @@ class NavBar extends StatelessWidget {
         child: GNav(
           gap: 0,
           activeColor: Theme.of(context).brightness == Brightness.dark
-              ? Theme.of(context).primaryColor
-              : Colors.white,
+              ? Colors.white
+              : Theme.of(context).primaryColor,
           iconSize: 28,
           padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           duration: Duration(milliseconds: 500),
-          tabBackgroundColor: Theme.of(context).accentColor,
+          tabBackgroundColor: Colors.white,
           tabs: [
             GButton(
-              icon: CupertinoIcons.compass_fill,
+              icon: CupertinoIcons.compass,
               text: 'قبله',
+              iconColor: Colors.white,
             ),
             GButton(
               icon: CupertinoIcons.list_bullet,
               text: 'برنامه',
+              iconColor: Colors.white,
             ),
             GButton(
-              icon: CupertinoIcons.house_fill,
+              icon: CupertinoIcons.house_alt,
               text: 'خانه',
+              iconColor: Colors.white,
             ),
             GButton(
-              icon: CupertinoIcons.book_fill,
+              icon: CupertinoIcons.book,
               text: 'دعا',
+              iconColor: Colors.white,
             ),
             GButton(
-              icon: CupertinoIcons.gear_solid,
+              icon: CupertinoIcons.gear,
               text: 'تنظیم',
+              iconColor: Colors.white,
             ),
           ],
           selectedIndex: globals.navigatorIndex,
