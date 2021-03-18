@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:radioramezan/splash.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/side_drawer.dart';
 import 'package:radioramezan/top_app_bar.dart';
@@ -20,10 +21,9 @@ import 'theme.dart';
 
 Future<Null> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Settings.init(
+  Settings.init(
     cacheProvider: SharePreferenceCache(),
   );
-  await globals.init();
   runApp(
     RadioRamezanApp(),
   );
@@ -51,20 +51,41 @@ class RadioRamezanApp extends StatelessWidget {
         brightness: brightness,
       ),
       themedWidgetBuilder: (context, theme) {
-        return MaterialApp(
-          title: 'رادیو رمضان',
-          theme: theme,
-          home: Main(),
-          localizationsDelegates: [
-            GlobalCupertinoLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-          ],
-          supportedLocales: [
-            Locale('fa', 'IR'),
-          ],
-          locale: Locale('fa', 'IR'),
-          debugShowCheckedModeBanner: false,
+        return FutureBuilder(
+          future: globals.init(),
+          builder: (context, AsyncSnapshot snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return MaterialApp(
+                home: Splash(),
+                localizationsDelegates: [
+                  GlobalCupertinoLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                ],
+                supportedLocales: [
+                  Locale('fa', 'IR'),
+                ],
+                locale: Locale('fa', 'IR'),
+                debugShowCheckedModeBanner: false,
+              );
+            } else {
+              return MaterialApp(
+                title: 'رادیو رمضان',
+                theme: theme,
+                home: Main(),
+                localizationsDelegates: [
+                  GlobalCupertinoLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                ],
+                supportedLocales: [
+                  Locale('fa', 'IR'),
+                ],
+                locale: Locale('fa', 'IR'),
+                debugShowCheckedModeBanner: false,
+              );
+            }
+          },
         );
       },
     );
