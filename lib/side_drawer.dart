@@ -99,7 +99,7 @@ class SideDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.ios_share),
+                leading: Icon(CupertinoIcons.square_arrow_up),
                 title: Text(
                   'معرفی به دیگران',
                   style: TextStyle(
