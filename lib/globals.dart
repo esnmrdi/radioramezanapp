@@ -10,7 +10,7 @@ import 'package:preload_page_view/preload_page_view.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
+// import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:cron/cron.dart';
 import 'package:radioramezan/data_models/city_model.dart';
 import 'package:radioramezan/data_models/owghat_model.dart';
@@ -169,7 +169,7 @@ class Globals {
     city = Settings.getValue<City>(
         'city',
         City.fromJson(json.decode(
-            '{"country_id":"1","country_name_en":"Canada","country_name_fa":"کانادا","city_id": "3","city_name_en": "Montreal","city_name_fa":"مونترال","latitude":"45.504502","longitude":"-73.639600","time_zone":"America\/Toronto","radius":"35","url":"https://stream1.radioramezan.com:8443/montreal.mp3"}')));
+            '{"country_id":"1","country_name_en":"Canada","country_name_fa":"کانادا","city_id": "3","city_name_en": "Montreal","city_name_fa":"مونترال","latitude":"45.504502","longitude":"-73.639600","time_zone":"America\/Toronto","radius":"35","url":"https:\/\/stream1.radioramezan.com:8443\/montreal.mp3"}')));
     jalaliDate = json.encode({
       'year': Jalali.fromDateTime(DateTime.now()).formatter.yyyy,
       'month': Jalali.fromDateTime(DateTime.now()).formatter.mN,
@@ -212,7 +212,7 @@ class Globals {
       fetchCityList(),
       fetchOwghatList(city),
       loadPrayerList(),
-      FlutterDownloader.initialize(),
+      // FlutterDownloader.initialize(),
       loadRadioStream(city, metas),
     ]);
     currentAndNextItem = findCurrentAndNextItem();
