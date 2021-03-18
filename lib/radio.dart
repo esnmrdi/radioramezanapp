@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
+// import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:share/share.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cron/cron.dart';
@@ -226,26 +226,26 @@ class _RadioPlayer extends State<RadioPlayer> with TickerProviderStateMixin {
                 RawMaterialButton(
                   elevation: 0,
                   child: Icon(
-                    CupertinoIcons.arrow_down_to_line,
+                    CupertinoIcons.arrow_down_to_line_alt,
                     size: 32.0,
                     color: Colors.white,
                   ),
                   padding: EdgeInsets.all(16.0),
                   shape: CircleBorder(),
                   onPressed: () {
-                    FlutterDownloader.enqueue(
-                      url:
-                          'https:\/\/m.radioramezan.com\/api\/readfile.php?media_address=media\/22-music\/1613288065-Alireza_Ghorbani.mp3',
-                      savedDir: '/sdcard/download/',
-                      showNotification: true,
-                      openFileFromNotification: true,
-                    );
+                    // FlutterDownloader.enqueue(
+                    //   url:
+                    //       'https:\/\/m.radioramezan.com\/api\/readfile.php?media_address=media\/22-music\/1613288065-Alireza_Ghorbani.mp3',
+                    //   savedDir: '/sdcard/download/',
+                    //   showNotification: true,
+                    //   openFileFromNotification: true,
+                    // );
                   },
                 ),
                 RawMaterialButton(
                   elevation: 0,
                   child: Icon(
-                    Icons.ios_share,
+                    CupertinoIcons.square_arrow_up,
                     size: 32.0,
                     color: Colors.white,
                   ),
