@@ -49,17 +49,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Path drawSunPath(Size size) {
     Path path = Path();
-    path.moveTo(0, .9 * size.height);
+    path.moveTo(0, size.height);
     path.cubicTo(
-      .2 * size.width,
-      .9 * size.height,
       .25 * size.width,
-      .2 * size.height,
+      size.height,
+      .25 * size.width,
+      0,
       .5 * size.width,
-      .2 * size.height,
+      0,
     );
-    path.cubicTo(.75 * size.width, .2 * size.height, .8 * size.width,
-        .9 * size.height, size.width, .9 * size.height);
+    path.cubicTo(.75 * size.width, 0, .75 * size.width, size.height, size.width,
+        size.height);
 
     return path;
   }
@@ -155,59 +155,49 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        canvasSize =
-            Size(.85 * constraints.maxWidth, .3 * constraints.maxHeight);
-        horizonPath =
-            drawHorizontalPath(0, canvasSize.width, .6 * canvasSize.height);
-        verticalPathOne = drawVerticalPath(.21 * canvasSize.width,
-            .32 * canvasSize.height, .55 * canvasSize.height);
-        verticalPathTwo = drawVerticalPath(.79 * canvasSize.width,
-            .32 * canvasSize.height, .55 * canvasSize.height);
-        sunPath = drawSunPath(canvasSize);
-        return Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.topCenter,
-              colors: [
-                RadioRamezanColors.ramady,
-                Colors.black,
-                RadioRamezanColors.ramady,
-              ],
-              radius: 1.5,
-              stops: [.0, .7, 1.0],
-              tileMode: TileMode.clamp,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.topCenter,
+          colors: [
+            RadioRamezanColors.ramady,
+            Colors.black,
+            RadioRamezanColors.ramady,
+          ],
+          radius: 1.5,
+          stops: [.0, .7, 1.0],
+          tileMode: TileMode.clamp,
+        ),
+      ),
+      foregroundDecoration: BoxDecoration(
+        image: DecorationImage(
+            image: AssetImage('assets/images/mosque_frame_top.png'),
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter),
+      ),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+            0, .22 * MediaQuery.of(context).size.width, 0, 15),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/mosque_frame_edge.png'),
+            fit: BoxFit.fill,
+            alignment: Alignment.topCenter,
           ),
-          foregroundDecoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage('assets/images/mosque_frame_top.png'),
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/mosque_frame_edge.png'),
-                fit: BoxFit.fill,
-                alignment: Alignment.topCenter,
-              ),
-            ),
-            child: Column(
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                SizedBox(
-                  height: .15 * constraints.maxHeight,
-                ),
                 Container(
-                  height: .28 * constraints.maxHeight,
+                  height: .33 * constraints.maxHeight,
                   width: .85 * constraints.maxWidth,
                   child: Stack(
                     alignment: Alignment.topCenter,
                     children: [
                       Container(
-                        height: .1 * constraints.maxHeight,
+                        height: .125 * constraints.maxHeight,
                         child: Stack(
                           alignment: AlignmentDirectional.center,
                           children: [
@@ -235,9 +225,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       Positioned(
                         right: .06 * constraints.maxWidth,
-                        top: .09 * constraints.maxHeight,
+                        top: .12 * constraints.maxHeight,
                         child: Container(
-                          height: .16 * constraints.maxHeight,
+                          height: .18 * constraints.maxHeight,
                           width: .22 * constraints.maxWidth,
                           child: Stack(
                             alignment: AlignmentDirectional.center,
@@ -272,9 +262,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
                       Positioned(
-                        top: .12 * constraints.maxHeight,
+                        top: .15 * constraints.maxHeight,
                         child: Container(
-                          height: .16 * constraints.maxHeight,
+                          height: .18 * constraints.maxHeight,
                           width: .22 * constraints.maxWidth,
                           child: Stack(
                             alignment: AlignmentDirectional.center,
@@ -312,9 +302,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       Positioned(
                         left: .06 * constraints.maxWidth,
-                        top: .09 * constraints.maxHeight,
+                        top: .12 * constraints.maxHeight,
                         child: Container(
-                          height: .16 * constraints.maxHeight,
+                          height: .18 * constraints.maxHeight,
                           width: .22 * constraints.maxWidth,
                           child: Stack(
                             alignment: AlignmentDirectional.center,
@@ -352,145 +342,182 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
-                Container(
-                  height: .3 * constraints.maxHeight,
-                  width: .85 * constraints.maxWidth,
-                  child: Stack(
-                    alignment: AlignmentDirectional.topEnd,
-                    children: [
-                      CustomPaint(
-                        painter: PathPainter(horizonPath, horizonPaint),
-                      ),
-                      CustomPaint(
-                        painter: PathPainter(verticalPathOne, verticalPaint),
-                      ),
-                      CustomPaint(
-                        painter: PathPainter(verticalPathTwo, verticalPaint),
-                      ),
-                      CustomPaint(
-                        painter: PathPainter(sunPath, sunPaint),
-                      ),
-                      AnimatedBuilder(
-                        animation: sunAnimationController,
-                        builder: (context, child) {
-                          sunOffset =
-                              calculateSunPosition(sunPath, sunAnimation.value);
-                          sunOffset =
-                              Offset(sunOffset.dx - 12, sunOffset.dy - 12);
-                          return Transform.translate(
-                            offset: sunOffset,
-                            child: child,
-                          );
-                        },
-                        child: Icon(
-                          CupertinoIcons.sun_max_fill,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      Center(
-                        child: Container(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
+                SizedBox(height: 15),
+                Expanded(
+                  flex: 1,
+                  child: LayoutBuilder(
+                    builder: (context, canvasConstraints) {
+                      canvasSize = Size(.85 * canvasConstraints.maxWidth,
+                          canvasConstraints.maxHeight);
+                      horizonPath = drawHorizontalPath(
+                          0, canvasSize.width, .5 * canvasSize.height);
+                      // verticalPathOne = drawVerticalPath(.25 * canvasSize.width,
+                      //     .25 * canvasSize.height, .45 * canvasSize.height);
+                      // verticalPathTwo = drawVerticalPath(.75 * canvasSize.width,
+                      //     .25 * canvasSize.height, .45 * canvasSize.height);
+                      sunPath = drawSunPath(canvasSize);
+                      return Container(
+                        width: .85 * constraints.maxWidth,
+                        child: Column(
+                          children: <Widget>[
+                            Expanded(
+                              flex: 1,
+                              child: Stack(
+                                alignment: AlignmentDirectional.topEnd,
                                 children: [
-                                  Text(
-                                    globals.owghat.sunset,
-                                    style: TextStyle(
+                                  CustomPaint(
+                                    painter:
+                                        PathPainter(horizonPath, horizonPaint),
+                                  ),
+                                  // CustomPaint(
+                                  //   painter: PathPainter(
+                                  //       verticalPathOne, verticalPaint),
+                                  // ),
+                                  // CustomPaint(
+                                  //   painter: PathPainter(
+                                  //       verticalPathTwo, verticalPaint),
+                                  // ),
+                                  CustomPaint(
+                                    painter: PathPainter(sunPath, sunPaint),
+                                  ),
+                                  AnimatedBuilder(
+                                    animation: sunAnimationController,
+                                    builder: (context, child) {
+                                      sunOffset = calculateSunPosition(
+                                          sunPath, sunAnimation.value);
+                                      sunOffset = Offset(
+                                          sunOffset.dx - 12, sunOffset.dy - 12);
+                                      return Transform.translate(
+                                        offset: sunOffset,
+                                        child: child,
+                                      );
+                                    },
+                                    child: Icon(
+                                      CupertinoIcons.sun_max_fill,
                                       color: Colors.white,
-                                      fontSize: 16,
+                                      size: 24,
                                     ),
                                   ),
                                   Container(
-                                    padding: EdgeInsets.all(5),
-                                    decoration: BoxDecoration(
-                                      color: RadioRamezanColors.goldy[800],
-                                      shape: BoxShape.rectangle,
-                                      borderRadius: BorderRadius.circular(5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.all(5),
+                                              decoration: BoxDecoration(
+                                                color: RadioRamezanColors
+                                                    .goldy[800],
+                                                shape: BoxShape.rectangle,
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              child: Text(
+                                                'غروب آفتاب',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              globals.owghat.sunset,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.all(5),
+                                              decoration: BoxDecoration(
+                                                color: RadioRamezanColors
+                                                    .goldy[800],
+                                                shape: BoxShape.rectangle,
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              child: Text(
+                                                'طلوع آفتاب',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              globals.owghat.sunrise,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                    child: Text(
-                                      'غروب آفتاب',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
+                                  ),
+                                  Positioned(
+                                    top: .55 * canvasConstraints.maxHeight,
+                                    child: Container(
+                                      width: .85 * constraints.maxWidth,
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          'افق',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: .75 * canvasConstraints.maxHeight,
+                                    child: Container(
+                                      width: .85 * constraints.maxWidth,
+                                      child: Center(
+                                        child: Text(
+                                          'طول روز: ${(globals.owghat.dayLength / 60).truncate()} ساعت و ${globals.owghat.dayLength % 60} دقیقه',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                              Column(
-                                children: [
-                                  Text(
-                                    globals.owghat.sunrise,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.all(5),
-                                    decoration: BoxDecoration(
-                                      color: RadioRamezanColors.goldy[800],
-                                      shape: BoxShape.rectangle,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Text(
-                                      'طلوع آفتاب',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: .14 * constraints.maxHeight,
-                        child: Container(
-                          width: .85 * constraints.maxWidth,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              'افق',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ),
-                      Positioned(
-                        top: .2 * constraints.maxHeight,
-                        child: Container(
-                          width: .85 * constraints.maxWidth,
-                          child: Center(
-                            child: Text(
-                              'طول روز: ${(globals.owghat.dayLength / 60).truncate()} ساعت و ${globals.owghat.dayLength % 60} دقیقه',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
+                SizedBox(height: 15),
                 Container(
-                  height: .1 * constraints.maxHeight,
                   width: .85 * constraints.maxWidth,
                   child: Row(
+                    mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         children: [
+                          Text(
+                            globals.owghat.maghreb,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
                           Container(
                             padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
@@ -506,17 +533,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                      Column(
+                        children: [
                           Text(
-                            globals.owghat.maghreb,
+                            globals.owghat.zohr,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                             ),
                           ),
-                        ],
-                      ),
-                      Column(
-                        children: [
                           Container(
                             padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
@@ -532,17 +559,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                      Column(
+                        children: [
                           Text(
-                            globals.owghat.zohr,
+                            globals.owghat.sobh,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                             ),
                           ),
-                        ],
-                      ),
-                      Column(
-                        children: [
                           Container(
                             padding: EdgeInsets.all(5),
                             decoration: BoxDecoration(
@@ -558,21 +585,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ),
                             ),
                           ),
-                          Text(
-                            globals.owghat.sobh,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: .01 * constraints.maxHeight),
+                SizedBox(height: 15),
                 Container(
-                  height: .14 * constraints.maxHeight,
+                  height: 70,
                   width: .9 * constraints.maxWidth,
                   child: Card(
                     elevation: 2,
@@ -587,7 +607,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: AssetImage(
-                              'assets/images/golden_mosque_20percent.png'),
+                              'assets/images/golden_mosque_50percent.png'),
                           fit: BoxFit.fitHeight,
                           alignment: Alignment.bottomLeft,
                         ),
@@ -709,12 +729,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
-                SizedBox(height: .02 * constraints.maxHeight),
               ],
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }
