@@ -592,7 +592,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
                 SizedBox(height: 15),
                 Container(
-                  height: 70,
+                  height: 75,
                   width: .9 * constraints.maxWidth,
                   child: Card(
                     elevation: 2,
@@ -621,7 +621,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 context: context,
                                 builder: (context) => RadioPlayer(),
                                 duration: Duration(milliseconds: 500),
-                                enableDrag: true,
+                                enableDrag: false,
                               );
                             },
                           );
