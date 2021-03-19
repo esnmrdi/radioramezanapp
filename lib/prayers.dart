@@ -83,7 +83,7 @@ class _Prayers extends State<Prayers> {
                                       prayer: prayer,
                                     ),
                                     duration: Duration(milliseconds: 500),
-                                    enableDrag: true,
+                                    enableDrag: false,
                                   );
                                 },
                               );

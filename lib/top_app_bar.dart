@@ -39,7 +39,7 @@ class TopAppBar extends StatelessWidget implements PreferredSizeWidget {
                   context: context,
                   builder: (context) => RadioPlayer(),
                   duration: Duration(milliseconds: 500),
-                  enableDrag: true,
+                  enableDrag: false,
                 );
               },
             );

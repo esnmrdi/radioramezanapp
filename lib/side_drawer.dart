@@ -68,7 +68,7 @@ class SideDrawer extends StatelessWidget {
                         context: globals.drawerKey.currentContext,
                         builder: (context) => MonthlyOwghat(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: true,
+                        enableDrag: false,
                       );
                     },
                   );
@@ -92,7 +92,7 @@ class SideDrawer extends StatelessWidget {
                         context: globals.drawerKey.currentContext,
                         builder: (context) => SupportUs(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: true,
+                        enableDrag: false,
                       );
                     },
                   );
@@ -138,7 +138,7 @@ class SideDrawer extends StatelessWidget {
                         context: globals.drawerKey.currentContext,
                         builder: (context) => AboutUs(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: true,
+                        enableDrag: false,
                       );
                     },
                   );
@@ -162,7 +162,7 @@ class SideDrawer extends StatelessWidget {
                         context: globals.drawerKey.currentContext,
                         builder: (context) => ContactUs(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: true,
+                        enableDrag: false,
                       );
                     },
                   );
