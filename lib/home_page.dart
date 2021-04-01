@@ -4,45 +4,35 @@ import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cron/cron.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/path_painter.dart';
-import 'package:radioramezan/radio.dart';
-import 'theme.dart';
+import 'package:radioramezan/radio_modal.dart';
+import 'package:radioramezan/theme.dart';
 
 class HomePage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  GlobalKey<ScaffoldState> homePageScaffoldKey;
   Cron midnightCron = Cron();
   Cron liveHomePageCron = Cron();
   Path horizonPath, sunPath, verticalPathOne, verticalPathTwo;
   Size canvasSize;
-  Paint horizonPaint, sunPaint, verticalPaint;
+  Paint horizonPaint, sunPaint;
   Offset sunOffset;
   AnimationController sunAnimationController;
   Animation sunAnimation;
   Map<String, String> gregorianMonthNames;
   Map<String, String> hijriMonthNames;
-  Animation<double> playPauseAnimation;
-  AnimationController playPauseAnimationcontroller;
 
   Path drawHorizontalPath(double x1, double x2, double y) {
     Path path = Path();
     path.moveTo(x1, y);
     path.lineTo(x2, y);
-
-    return path;
-  }
-
-  Path drawVerticalPath(double x, double y1, double y2) {
-    Path path = Path();
-    path.moveTo(x, y1);
-    path.lineTo(x, y2);
 
     return path;
   }
@@ -54,12 +44,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       .25 * size.width,
       size.height,
       .25 * size.width,
-      0,
+      .2 * size.height,
       .5 * size.width,
-      0,
+      .2 * size.height,
     );
-    path.cubicTo(.75 * size.width, 0, .75 * size.width, size.height, size.width,
-        size.height);
+    path.cubicTo(.75 * size.width, .2 * size.height, .75 * size.width,
+        size.height, size.width, size.height);
 
     return path;
   }
@@ -74,6 +64,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    homePageScaffoldKey = GlobalKey<ScaffoldState>();
     midnightCron.schedule(Schedule.parse('0 0 * * *'), () async {
       await globals.midnightCron();
       setState(() {});
@@ -96,39 +87,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       '12': 'DEC',
     };
     hijriMonthNames = {
-      '1': 'محرم',
-      '2': 'صفر',
-      '3': 'ربیع الاول',
-      '4': 'ربیع الثانی',
-      '5': 'جمادی الاول',
-      '6': 'جمادی الثانی',
-      '7': 'رجب',
-      '8': 'شعبان',
-      '9': 'رمضان',
+      '01': 'محرم',
+      '02': 'صفر',
+      '03': 'ربیع الاول',
+      '04': 'ربیع الثانی',
+      '05': 'جمادی الاول',
+      '06': 'جمادی الثانی',
+      '07': 'رجب',
+      '08': 'شعبان',
+      '09': 'رمضان',
       '10': 'شوال',
       '11': 'ذیقعده',
       '12': 'ذیحجه',
     };
-    playPauseAnimationcontroller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 200),
-    );
-    playPauseAnimation = CurvedAnimation(
-      curve: Curves.linear,
-      parent: playPauseAnimationcontroller,
-    );
     horizonPaint = Paint()
       ..color = Colors.white.withOpacity(.5)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1;
     sunPaint = Paint()
       ..color = Colors.yellow.withOpacity(.75)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    verticalPaint = Paint()
-      ..color = Colors.white.withOpacity(.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 1;
     sunAnimationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 2500),
@@ -155,583 +134,466 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.topCenter,
-          colors: [
-            RadioRamezanColors.ramady,
-            Colors.black,
-            RadioRamezanColors.ramady,
-          ],
-          radius: 1.5,
-          stops: [.0, .7, 1.0],
-          tileMode: TileMode.clamp,
+    return Scaffold(
+      key: homePageScaffoldKey,
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'رادیو رمضان',
+          textAlign: TextAlign.center,
         ),
-      ),
-      foregroundDecoration: BoxDecoration(
-        image: DecorationImage(
-            image: AssetImage('assets/images/mosque_frame_top.png'),
-            fit: BoxFit.fitWidth,
-            alignment: Alignment.topCenter),
-      ),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(
-            0, .22 * MediaQuery.of(context).size.width, 0, 15),
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/mosque_frame_edge.png'),
-            fit: BoxFit.fill,
-            alignment: Alignment.topCenter,
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            globals.mainScaffoldKey.currentState.openDrawer();
+          },
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.radio,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Future.delayed(
+                Duration(milliseconds: 250),
+                () {
+                  showMaterialModalBottomSheet(
+                    context: context,
+                    builder: (context) => RadioModal(),
+                    duration: Duration(milliseconds: 500),
+                    enableDrag: true,
+                  );
+                },
+              );
+            },
           ),
+        ],
+        brightness: Brightness.dark,
+      ),
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withOpacity(.5),
+          // gradient: RadialGradient(
+          //   center: Alignment.topCenter,
+          //   colors: [
+          //     Theme.of(context).primaryColor.withOpacity(.2),
+          //     Colors.white,
+          //     Theme.of(context).primaryColor.withOpacity(.2),
+          //   ],
+          //   radius: 1.5,
+          //   stops: [.0, .7, 1.0],
+          //   tileMode: TileMode.clamp,
+          // ),
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Container(
-                  height: .33 * constraints.maxHeight,
-                  width: .85 * constraints.maxWidth,
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      Container(
-                        height: .125 * constraints.maxHeight,
-                        child: Stack(
-                          alignment: AlignmentDirectional.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/city_frame.png',
-                              fit: BoxFit.fill,
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+        foregroundDecoration: BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/images/mosque_frame_top.png'),
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter),
+        ),
+        child: Container(
+          padding:
+              EdgeInsets.only(top: .22 * MediaQuery.of(context).size.width),
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/mosque_frame_edge.png'),
+              fit: BoxFit.fill,
+              alignment: Alignment.topCenter,
+            ),
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Container(
+                    height: .4 * constraints.maxHeight,
+                    width: .85 * constraints.maxWidth,
+                    child: Stack(
+                      alignment: Alignment.topCenter,
+                      children: [
+                        Container(
+                          height: .15 * constraints.maxHeight,
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              Image.asset(
+                                'assets/images/city_frame.png',
+                                fit: BoxFit.fill,
+                              ),
+                              Text(
+                                globals.city.countryNameFa +
+                                    ' : ' +
+                                    globals.city.cityNameFa,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          right: .075 * constraints.maxWidth,
+                          top: .13 * constraints.maxHeight,
+                          child: Container(
+                            height: .2 * constraints.maxHeight,
+                            child: Stack(
+                              alignment: AlignmentDirectional.center,
                               children: [
-                                Text(
-                                  globals.city.countryNameFa +
-                                      ' | ' +
-                                      globals.city.cityNameFa,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 14,
+                                Image.asset('assets/images/date_frame.png'),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      bottom: .075 * constraints.maxHeight),
+                                  child: Text(
+                                    json.decode(globals.jalaliDate)['month'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: .075 * constraints.maxHeight),
+                                  child: Text(
+                                    json.decode(globals.jalaliDate)['day'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 24,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        right: .06 * constraints.maxWidth,
-                        top: .12 * constraints.maxHeight,
-                        child: Container(
-                          height: .18 * constraints.maxHeight,
-                          width: .22 * constraints.maxWidth,
-                          child: Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: [
-                              Image.asset('assets/images/date_frame.png'),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    bottom: .05 * constraints.maxHeight),
-                                child: Text(
-                                  json.decode(globals.jalaliDate)['month'],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    top: .06 * constraints.maxHeight),
-                                child: Text(
-                                  json.decode(globals.jalaliDate)['day'],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 24,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                         ),
-                      ),
-                      Positioned(
-                        top: .15 * constraints.maxHeight,
-                        child: Container(
-                          height: .18 * constraints.maxHeight,
-                          width: .22 * constraints.maxWidth,
-                          child: Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: [
-                              Image.asset('assets/images/date_frame.png'),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    bottom: .05 * constraints.maxHeight),
-                                child: Text(
-                                  gregorianMonthNames[json
-                                      .decode(globals.gregorianDate)['month']],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    top: .06 * constraints.maxHeight),
-                                child: Text(
-                                  json.decode(globals.gregorianDate)['day'],
-                                  style: TextStyle(
-                                    fontFamily: '',
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 24,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: .06 * constraints.maxWidth,
-                        top: .12 * constraints.maxHeight,
-                        child: Container(
-                          height: .18 * constraints.maxHeight,
-                          width: .22 * constraints.maxWidth,
-                          child: Stack(
-                            alignment: AlignmentDirectional.center,
-                            children: [
-                              Image.asset('assets/images/date_frame.png'),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    bottom: .05 * constraints.maxHeight),
-                                child: Text(
-                                  hijriMonthNames[
-                                      json.decode(globals.hijriDate)['month']],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    top: .06 * constraints.maxHeight),
-                                child: Text(
-                                  json.decode(globals.hijriDate)['day'],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 24,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 15),
-                Expanded(
-                  flex: 1,
-                  child: LayoutBuilder(
-                    builder: (context, canvasConstraints) {
-                      canvasSize = Size(.85 * canvasConstraints.maxWidth,
-                          canvasConstraints.maxHeight);
-                      horizonPath = drawHorizontalPath(
-                          0, canvasSize.width, .5 * canvasSize.height);
-                      // verticalPathOne = drawVerticalPath(.25 * canvasSize.width,
-                      //     .25 * canvasSize.height, .45 * canvasSize.height);
-                      // verticalPathTwo = drawVerticalPath(.75 * canvasSize.width,
-                      //     .25 * canvasSize.height, .45 * canvasSize.height);
-                      sunPath = drawSunPath(canvasSize);
-                      return Container(
-                        width: .85 * constraints.maxWidth,
-                        child: Column(
-                          children: <Widget>[
-                            Expanded(
-                              flex: 1,
-                              child: Stack(
-                                alignment: AlignmentDirectional.topEnd,
-                                children: [
-                                  CustomPaint(
-                                    painter:
-                                        PathPainter(horizonPath, horizonPaint),
-                                  ),
-                                  // CustomPaint(
-                                  //   painter: PathPainter(
-                                  //       verticalPathOne, verticalPaint),
-                                  // ),
-                                  // CustomPaint(
-                                  //   painter: PathPainter(
-                                  //       verticalPathTwo, verticalPaint),
-                                  // ),
-                                  CustomPaint(
-                                    painter: PathPainter(sunPath, sunPaint),
-                                  ),
-                                  AnimatedBuilder(
-                                    animation: sunAnimationController,
-                                    builder: (context, child) {
-                                      sunOffset = calculateSunPosition(
-                                          sunPath, sunAnimation.value);
-                                      sunOffset = Offset(
-                                          sunOffset.dx - 12, sunOffset.dy - 12);
-                                      return Transform.translate(
-                                        offset: sunOffset,
-                                        child: child,
-                                      );
-                                    },
-                                    child: Icon(
-                                      CupertinoIcons.sun_max_fill,
+                        Positioned(
+                          top: .18 * constraints.maxHeight,
+                          child: Container(
+                            height: .2 * constraints.maxHeight,
+                            child: Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: [
+                                Image.asset('assets/images/date_frame.png'),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      bottom: .065 * constraints.maxHeight),
+                                  child: Text(
+                                    gregorianMonthNames[json.decode(
+                                        globals.gregorianDate)['month']],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
                                       color: Colors.white,
-                                      size: 24,
+                                      fontSize: 14,
                                     ),
                                   ),
-                                  Container(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                          children: [
-                                            Container(
-                                              padding: EdgeInsets.all(5),
-                                              decoration: BoxDecoration(
-                                                color: RadioRamezanColors
-                                                    .goldy[800],
-                                                shape: BoxShape.rectangle,
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child: Text(
-                                                'غروب آفتاب',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              globals.owghat.sunset,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Column(
-                                          children: [
-                                            Container(
-                                              padding: EdgeInsets.all(5),
-                                              decoration: BoxDecoration(
-                                                color: RadioRamezanColors
-                                                    .goldy[800],
-                                                shape: BoxShape.rectangle,
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child: Text(
-                                                'طلوع آفتاب',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              globals.owghat.sunrise,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: .55 * canvasConstraints.maxHeight,
-                                    child: Container(
-                                      width: .85 * constraints.maxWidth,
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          'افق',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: .75 * canvasConstraints.maxHeight,
-                                    child: Container(
-                                      width: .85 * constraints.maxWidth,
-                                      child: Center(
-                                        child: Text(
-                                          'طول روز: ${(globals.owghat.dayLength / 60).truncate()} ساعت و ${globals.owghat.dayLength % 60} دقیقه',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: 15),
-                Container(
-                  width: .85 * constraints.maxWidth,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            globals.owghat.maghreb,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.cyan,
-                              shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              'اذان مغرب',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            globals.owghat.zohr,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.indigo,
-                              shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              'ظهر شرعی',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            globals.owghat.sobh,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.cyan,
-                              shape: BoxShape.rectangle,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              'اذان صبح',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 15),
-                Container(
-                  height: 75,
-                  width: .9 * constraints.maxWidth,
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    color: Colors.white,
-                    shadowColor: Colors.black.withOpacity(.5),
-                    margin: EdgeInsets.symmetric(
-                        horizontal: .025 * constraints.maxWidth),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                              'assets/images/golden_mosque_50percent.png'),
-                          fit: BoxFit.fitHeight,
-                          alignment: Alignment.bottomLeft,
-                        ),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          Future.delayed(
-                            Duration(milliseconds: 250),
-                            () {
-                              showMaterialModalBottomSheet(
-                                context: context,
-                                builder: (context) => RadioPlayer(),
-                                duration: Duration(milliseconds: 500),
-                                enableDrag: false,
-                              );
-                            },
-                          );
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            SizedBox(width: 5),
-                            RawMaterialButton(
-                              constraints: BoxConstraints(
-                                minWidth: 64,
-                                minHeight: 64,
-                              ),
-                              padding: EdgeInsets.all(14),
-                              shape: CircleBorder(),
-                              elevation: globals.radioStreamIsLoaded ? 2 : 0,
-                              child: globals.radioStreamIsLoaded
-                                  ? AnimatedIcon(
-                                      icon: AnimatedIcons.play_pause,
-                                      size: 36,
-                                      color: RadioRamezanColors.ramady,
-                                      progress: playPauseAnimation,
-                                    )
-                                  : Container(
-                                      height: 36,
-                                      width: 36,
-                                      // padding: EdgeInsets.all(18),
-                                      child: CircularProgressIndicator(),
-                                    ),
-                              onPressed: globals.radioStreamIsLoaded
-                                  ? () {
-                                      if (globals.radioPlayerIsPaused) {
-                                        playPauseAnimationcontroller.forward();
-                                        globals.radioPlayer.play();
-                                      } else {
-                                        playPauseAnimationcontroller.reverse();
-                                        globals.radioPlayer.pause();
-                                      }
-                                      setState(() {
-                                        globals.radioPlayerIsPaused =
-                                            !globals.radioPlayerIsPaused;
-                                      });
-                                    }
-                                  : null,
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: CarouselSlider.builder(
-                                itemCount: globals.currentAndNextItem.length,
-                                options: CarouselOptions(
-                                  viewportFraction: 1,
-                                  initialPage: 0,
-                                  enableInfiniteScroll: true,
-                                  reverse: false,
-                                  autoPlay: true,
-                                  autoPlayInterval: Duration(seconds: 10),
-                                  autoPlayAnimationDuration:
-                                      Duration(seconds: 1),
-                                  autoPlayCurve: Curves.fastOutSlowIn,
-                                  scrollDirection: Axis.vertical,
                                 ),
-                                itemBuilder:
-                                    (BuildContext context, int index, _) {
-                                  return ListTile(
-                                    contentPadding: EdgeInsets.symmetric(
-                                      vertical: 1,
-                                      horizontal: 10,
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: .075 * constraints.maxHeight),
+                                  child: Text(
+                                    json.decode(globals.gregorianDate)['day'],
+                                    style: TextStyle(
+                                      fontFamily: '',
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 24,
+                                      color: Colors.black,
                                     ),
-                                    title: Text(
-                                      globals.currentAndNextItem[index].title,
-                                      overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: .075 * constraints.maxWidth,
+                          top: .13 * constraints.maxHeight,
+                          child: Container(
+                            height: .2 * constraints.maxHeight,
+                            child: Stack(
+                              alignment: AlignmentDirectional.center,
+                              children: [
+                                Image.asset('assets/images/date_frame.png'),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      bottom: .075 * constraints.maxHeight),
+                                  child: Text(
+                                    hijriMonthNames[json
+                                        .decode(globals.hijriDate)['month']],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.white,
+                                      fontSize: 14,
                                     ),
-                                    subtitle: globals.currentAndNextItem[index]
-                                                .description !=
-                                            ''
-                                        ? Text(
-                                            globals.currentAndNextItem[index]
-                                                .description,
-                                            overflow: TextOverflow.ellipsis,
-                                          )
-                                        : null,
-                                    trailing: Container(
-                                      padding: EdgeInsets.all(5),
-                                      decoration: BoxDecoration(
-                                        color: index == 0
-                                            ? Colors.red
-                                            : Colors.lightGreen,
-                                        shape: BoxShape.rectangle,
-                                        borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      top: .075 * constraints.maxHeight),
+                                  child: Text(
+                                    json.decode(globals.hijriDate)['day'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 24,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: LayoutBuilder(
+                      builder: (context, canvasConstraints) {
+                        canvasSize = Size(.85 * canvasConstraints.maxWidth,
+                            canvasConstraints.maxHeight);
+                        horizonPath = drawHorizontalPath(
+                            0, .925 * canvasSize.width, .6 * canvasSize.height);
+                        sunPath = drawSunPath(canvasSize);
+                        return Container(
+                          width: .85 * constraints.maxWidth,
+                          child: Column(
+                            children: <Widget>[
+                              Expanded(
+                                flex: 1,
+                                child: Stack(
+                                  alignment: AlignmentDirectional.topEnd,
+                                  children: [
+                                    CustomPaint(
+                                      painter: PathPainter(
+                                          horizonPath, horizonPaint),
+                                    ),
+                                    CustomPaint(
+                                      painter: PathPainter(sunPath, sunPaint),
+                                    ),
+                                    AnimatedBuilder(
+                                      animation: sunAnimationController,
+                                      builder: (context, child) {
+                                        sunOffset = calculateSunPosition(
+                                            sunPath, sunAnimation.value);
+                                        sunOffset = Offset(sunOffset.dx - 12,
+                                            sunOffset.dy - 12);
+                                        return Transform.translate(
+                                          offset: sunOffset,
+                                          child: child,
+                                        );
+                                      },
+                                      child: Icon(
+                                        CupertinoIcons.sun_max_fill,
+                                        color: Colors.white,
+                                        size: 24,
                                       ),
-                                      child: Text(
-                                        index == 0 ? 'پخش زنده' : 'برنامه بعد',
-                                        style: TextStyle(
-                                          color: Colors.white,
+                                    ),
+                                    Container(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                  color: RadioRamezanColors
+                                                      .goldy[800],
+                                                  shape: BoxShape.rectangle,
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                child: Text(
+                                                  'غروب آفتاب',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                globals.owghat.sunset,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                  color: RadioRamezanColors
+                                                      .goldy[800],
+                                                  shape: BoxShape.rectangle,
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                ),
+                                                child: Text(
+                                                  'طلوع آفتاب',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                globals.owghat.sunrise,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: .525 * canvasConstraints.maxHeight,
+                                      child: Container(
+                                        width: .85 * constraints.maxWidth,
+                                        child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Text(
+                                            'افق',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  );
-                                },
+                                    Positioned(
+                                      top: .75 * canvasConstraints.maxHeight,
+                                      child: Container(
+                                        width: .85 * constraints.maxWidth,
+                                        child: Center(
+                                          child: Text(
+                                            'طول روز: ${(globals.owghat.dayLength / 60).truncate()} ساعت و ${globals.owghat.dayLength % 60} دقیقه',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    width: .85 * constraints.maxWidth,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              globals.owghat.maghreb,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.cyan,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                'اذان مغرب',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
+                        Column(
+                          children: [
+                            Text(
+                              globals.owghat.zohr,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                'ظهر شرعی',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              globals.owghat.sobh,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: Colors.cyan,
+                                shape: BoxShape.rectangle,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                'اذان صبح',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                  SizedBox(height: 20),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
