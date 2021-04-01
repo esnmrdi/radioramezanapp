@@ -5,12 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:http/http.dart';
 import 'package:shamsi_date/shamsi_date.dart';
-import 'package:hijri/hijri_calendar.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:url_launcher/url_launcher.dart';
-// import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:cron/cron.dart';
 import 'package:radioramezan/data_models/city_model.dart';
 import 'package:radioramezan/data_models/owghat_model.dart';
@@ -21,7 +20,9 @@ import 'package:radioramezan/data_models/ad_model.dart';
 class Globals {
   int navigatorIndex;
   PreloadPageController pageController;
-  GlobalKey<ScaffoldState> drawerKey = GlobalKey();
+  AnimationController playPauseAnimationController;
+  Animation<double> playPauseAnimation;
+  GlobalKey<ScaffoldState> mainScaffoldKey = GlobalKey<ScaffoldState>();
   List<City> cityList = [];
   List<Ad> adList = [];
   List<Owghat> owghatList = [];
@@ -29,11 +30,11 @@ class Globals {
   List<Prayer> prayerList = [];
   City city;
   Owghat owghat;
-  String jalaliDate, gregorianDate, hijriDate;
+  String jalaliDate, gregorianDate, hijriDate, smtpUsername, smtpPassword;
   AssetsAudioPlayer radioPlayer;
   bool radioPlayerIsPaused, radioPlayerIsMuted, radioStreamIsLoaded;
   Metas metas;
-  List<RadioItem> currentAndNextItem;
+  List<int> currentAndNextItem;
   Cron liveCron = Cron();
 
   Future<Null> fetchCityList() async {
@@ -45,7 +46,7 @@ class Globals {
           .map((i) => City.fromJson(i))
           .toList();
     } else {
-      throw Exception('Failed to fetch owghat!');
+      throw Exception('Failed to fetch city list!');
     }
   }
 
@@ -65,10 +66,11 @@ class Globals {
 
   Future<Null> fetchOwghat(City city) async {
     final response = await get(
-        'https://m.radioramezan.com/api/owghat.php?city=' +
-            city.cityId.toString() +
-            '&date=' +
-            intl.DateFormat('yyyy-MM-dd').format(DateTime.now()));
+      'https://m.radioramezan.com/api/owghat.php?city=' +
+          city.cityId.toString() +
+          '&date=' +
+          intl.DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    );
 
     if (response.statusCode == 200) {
       owghat = Owghat.fromJson(json.decode(response.body));
@@ -79,17 +81,18 @@ class Globals {
 
   Future<Null> fetchRadioItemList(City city) async {
     final response = await get(
-        'https://m.radioramezan.com/api/radio-conductor.php?city=' +
-            city.cityId.toString() +
-            '&date=' +
-            intl.DateFormat('yyyy-MM-dd').format(DateTime.now()));
+      'https://m.radioramezan.com/api/radio-conductor.php?city=' +
+          city.cityId.toString() +
+          '&date=' +
+          intl.DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    );
     if (response.statusCode == 200) {
       radioItemList.clear();
       radioItemList = (json.decode(response.body) as List)
           .map((i) => RadioItem.fromJson(i))
           .toList();
     } else {
-      throw Exception('Failed to fetch the conductor!');
+      throw Exception('Failed to fetch the radio item list!');
     }
   }
 
@@ -102,7 +105,26 @@ class Globals {
           .map((i) => Ad.fromJson(i))
           .toList();
     } else {
-      throw Exception('Failed to fetch the conductor!');
+      throw Exception('Failed to fetch the ad list!');
+    }
+  }
+
+  Future<Null> fetchHijriDate(City city) async {
+    final response = await get(
+      'https://m.radioramezan.com/api/ghamarai.php?city=' +
+          city.cityId.toString() +
+          '&date=' +
+          intl.DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    );
+    if (response.statusCode == 200) {
+      hijriDate = json.decode(response.body)[0]['ghamari'];
+      hijriDate = json.encode({
+        'year': hijriDate.split('-')[0],
+        'month': hijriDate.split('-')[1],
+        'day': hijriDate.split('-')[2]
+      });
+    } else {
+      throw Exception('Failed to fetch the hijri date!');
     }
   }
 
@@ -141,7 +163,7 @@ class Globals {
     }
   }
 
-  List<RadioItem> findCurrentAndNextItem() {
+  List<int> findCurrentAndNextItem() {
     int nowInMinutes = DateTime.now().hour * 60 + DateTime.now().minute;
     int currentStartInMinutes, nextStartInMinutes;
     for (var i = 0; i < radioItemList.length; i++) {
@@ -154,11 +176,11 @@ class Globals {
                 int.parse(radioItemList[i + 1].startHour.split(':')[1]);
         if (nowInMinutes >= currentStartInMinutes &&
             nowInMinutes < nextStartInMinutes) {
-          return [radioItemList[i], radioItemList[i + 1]];
+          return [i, i + 1];
         }
       } else {
         if (nowInMinutes >= currentStartInMinutes) {
-          return [radioItemList[i]];
+          return [i];
         }
       }
     }
@@ -180,12 +202,8 @@ class Globals {
       'month': Gregorian.fromDateTime(DateTime.now()).formatter.m,
       'day': Gregorian.fromDateTime(DateTime.now()).formatter.d
     });
-    hijriDate = json.encode({
-      'year': HijriCalendar.fromDate(DateTime.now()).hYear.toString(),
-      'month': HijriCalendar.fromDate(DateTime.now()).hMonth.toString(),
-      'day': HijriCalendar.fromDate(DateTime.now()).hDay.toString()
-    });
     await Future.wait([
+      fetchHijriDate(city),
       fetchOwghat(city),
       fetchRadioItemList(city),
     ]);
@@ -197,6 +215,8 @@ class Globals {
       initialPage: navigatorIndex,
       keepPage: true,
     );
+    smtpUsername = 'feedback@radioramezan.com';
+    smtpPassword = 'Radioabbasehsan123@';
     radioPlayer = AssetsAudioPlayer.newPlayer();
     radioStreamIsLoaded = false;
     radioPlayerIsMuted = false;
@@ -212,7 +232,7 @@ class Globals {
       fetchCityList(),
       fetchOwghatList(city),
       loadPrayerList(),
-      // FlutterDownloader.initialize(),
+      FlutterDownloader.initialize(),
       loadRadioStream(city, metas),
     ]);
     currentAndNextItem = findCurrentAndNextItem();
