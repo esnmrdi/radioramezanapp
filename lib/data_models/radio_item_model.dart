@@ -7,6 +7,7 @@ class RadioItem {
   final String startHour;
   final double startTimestamp;
   final String address;
+  bool isLiked;
 
   RadioItem({
     this.mediaId,
@@ -17,6 +18,7 @@ class RadioItem {
     this.startHour,
     this.startTimestamp,
     this.address,
+    this.isLiked,
   });
 
   factory RadioItem.fromJson(Map<String, dynamic> parsedJson) {
@@ -29,6 +31,7 @@ class RadioItem {
       startHour: parsedJson['start_hour'],
       startTimestamp: double.parse(parsedJson['start_timestamp']),
       address: parsedJson['address'],
+      isLiked: false,
     );
   }
 }
