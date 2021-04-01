@@ -6,48 +6,50 @@ import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:vector_math/vector_math.dart' as vmath;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 
 class Qibla extends StatefulWidget {
   @override
-  _Qibla createState() => _Qibla();
+  QiblaState createState() => QiblaState();
 }
 
-class _Qibla extends State<Qibla> {
-  Completer<GoogleMapController> mapController = Completer();
-  final CameraPosition montrealCameraPosition = CameraPosition(
-    target: LatLng(45.5017, -73.5673),
-    zoom: 16,
-  );
-  double kaabaOffset = 1.0241592; // Montreal offset from Kaaba in radians
+class QiblaState extends State<Qibla> {
+  GlobalKey<ScaffoldState> qiblaScaffoldKey;
+  Completer<GoogleMapController> mapController;
+  CameraPosition montrealCameraPosition;
+  double kaabaOffset; // Montreal offset from Kaaba in radians
 
   Future<LatLng> getUserPosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
     Position currentPosition;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+    await Permission.location.request();
+    if (!await Permission.location.status.isGranted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'دسترسی به جی پی اس وجود ندارد.',
+            style: TextStyle(fontFamily: 'Sans'),
+          ),
+          duration: Duration(seconds: 5),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            textColor: RadioRamezanColors.goldy,
+            label: 'اجازه بده!',
+            onPressed: () async {
+              await getUserPosition();
+            },
+          ),
+        ),
+      );
+    } else {
+      currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+      return LatLng(currentPosition.latitude, currentPosition.longitude);
     }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permantly denied, we cannot request permissions.');
-    }
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        return Future.error(
-            'Location permissions are denied (actual value: $permission).');
-      }
-    }
-    currentPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.best,
-    );
-
-    return LatLng(currentPosition.latitude, currentPosition.longitude);
+    return null;
   }
 
   Future<Null> focusOnUserPosition() async {
@@ -102,6 +104,13 @@ class _Qibla extends State<Qibla> {
 
   @override
   void initState() {
+    qiblaScaffoldKey = GlobalKey<ScaffoldState>();
+    mapController = Completer();
+    montrealCameraPosition = CameraPosition(
+      target: LatLng(45.5017, -73.5673),
+      zoom: 16,
+    );
+    kaabaOffset = 1.0241592;
     super.initState();
   }
 
@@ -111,75 +120,92 @@ class _Qibla extends State<Qibla> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Container(
-          child: Stack(
-            alignment: Alignment(.0, .0),
-            children: <Widget>[
-              Container(
-                child: GoogleMap(
-                  mapType: MapType.hybrid,
-                  zoomControlsEnabled: true,
-                  zoomGesturesEnabled: true,
-                  rotateGesturesEnabled: false,
-                  tiltGesturesEnabled: false,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  initialCameraPosition: montrealCameraPosition,
-                  onMapCreated: (GoogleMapController controller) {
-                    mapController.complete(controller);
-                    kaabaOffset = kaabaOffsetFromNorth(montrealCameraPosition);
-                  },
-                  onCameraMove: (CameraPosition mapCameraPosition) {
-                    setState(() {
-                      kaabaOffset = kaabaOffsetFromNorth(
-                        mapCameraPosition,
-                      );
-                    });
-                  },
-                  onCameraIdle: () {},
-                ),
-              ),
-              Positioned(
-                child: IgnorePointer(
-                  child: Image.asset('assets/images/compass.png'),
-                ),
-              ),
-              Positioned(
-                top: (constraints.maxHeight / 2) +
-                    .9 *
-                        (constraints.maxWidth / 2) *
-                        sin(-(pi / 2 - kaabaOffset)) -
-                    18,
-                left: (constraints.maxWidth / 2) +
-                    .9 *
-                        (constraints.maxWidth / 2) *
-                        cos(-(pi / 2 - kaabaOffset)) -
-                    18,
-                child: IgnorePointer(
-                  child: Image.asset(
-                    'assets/images/kaaba.png',
-                    height: 36,
+    return Scaffold(
+      key: qiblaScaffoldKey,
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'رادیو رمضان',
+          textAlign: TextAlign.center,
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            globals.mainScaffoldKey.currentState.openDrawer();
+          },
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              CupertinoIcons.scope,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              focusOnUserPosition();
+            },
+          ),
+        ],
+        brightness: Brightness.dark,
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            child: Stack(
+              alignment: Alignment(.0, .0),
+              children: <Widget>[
+                Container(
+                  child: GoogleMap(
+                    mapType: MapType.hybrid,
+                    zoomControlsEnabled: true,
+                    zoomGesturesEnabled: true,
+                    rotateGesturesEnabled: false,
+                    tiltGesturesEnabled: false,
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    initialCameraPosition: montrealCameraPosition,
+                    onMapCreated: (GoogleMapController controller) {
+                      mapController.complete(controller);
+                      kaabaOffset =
+                          kaabaOffsetFromNorth(montrealCameraPosition);
+                    },
+                    onCameraMove: (CameraPosition mapCameraPosition) {
+                      setState(() {
+                        kaabaOffset = kaabaOffsetFromNorth(
+                          mapCameraPosition,
+                        );
+                      });
+                    },
+                    onCameraIdle: () {},
                   ),
                 ),
-              ),
-              Positioned(
-                left: 10,
-                bottom: 10,
-                child: FloatingActionButton(
-                  elevation: 2,
-                  backgroundColor: RadioRamezanColors.ramady,
-                  child: Icon(CupertinoIcons.scope),
-                  onPressed: () {
-                    focusOnUserPosition();
-                  },
+                Positioned(
+                  child: IgnorePointer(
+                    child: Image.asset('assets/images/compass.png'),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+                Positioned(
+                  top: (constraints.maxHeight / 2) +
+                      .9 *
+                          (constraints.maxWidth / 2) *
+                          sin(-(pi / 2 - kaabaOffset)) -
+                      18,
+                  left: (constraints.maxWidth / 2) +
+                      .9 *
+                          (constraints.maxWidth / 2) *
+                          cos(-(pi / 2 - kaabaOffset)) -
+                      18,
+                  child: IgnorePointer(
+                    child: Image.asset(
+                      'assets/images/kaaba.png',
+                      height: 36,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
