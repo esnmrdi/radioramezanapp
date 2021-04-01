@@ -5,10 +5,10 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:package_info/package_info.dart';
 import 'package:share/share.dart';
 import 'package:radioramezan/globals.dart';
-import 'package:radioramezan/about_us.dart';
-import 'package:radioramezan/contact_us.dart';
-import 'package:radioramezan/support_us.dart';
-import 'package:radioramezan/monthly_owghat.dart';
+import 'package:radioramezan/about_us_modal.dart';
+import 'package:radioramezan/contact_us_modal.dart';
+import 'package:radioramezan/support_us_modal.dart';
+import 'package:radioramezan/monthly_owghat_modal.dart';
 
 class SideDrawer extends StatelessWidget {
   Future<String> loadVersionNumber() async {
@@ -60,15 +60,15 @@ class SideDrawer extends StatelessWidget {
                 ),
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
-                  globals.drawerKey.currentState.openEndDrawer();
+                  globals.mainScaffoldKey.currentState.openEndDrawer();
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
                       showMaterialModalBottomSheet(
-                        context: globals.drawerKey.currentContext,
-                        builder: (context) => MonthlyOwghat(),
+                        context: globals.mainScaffoldKey.currentContext,
+                        builder: (context) => MonthlyOwghatModal(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: false,
+                        enableDrag: true,
                       );
                     },
                   );
@@ -84,15 +84,15 @@ class SideDrawer extends StatelessWidget {
                 ),
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
-                  globals.drawerKey.currentState.openEndDrawer();
+                  globals.mainScaffoldKey.currentState.openEndDrawer();
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
                       showMaterialModalBottomSheet(
-                        context: globals.drawerKey.currentContext,
-                        builder: (context) => SupportUs(),
+                        context: globals.mainScaffoldKey.currentContext,
+                        builder: (context) => SupportUsModal(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: false,
+                        enableDrag: true,
                       );
                     },
                   );
@@ -108,7 +108,7 @@ class SideDrawer extends StatelessWidget {
                 ),
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
-                  globals.drawerKey.currentState.openEndDrawer();
+                  globals.mainScaffoldKey.currentState.openEndDrawer();
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
@@ -130,15 +130,15 @@ class SideDrawer extends StatelessWidget {
                 ),
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
-                  globals.drawerKey.currentState.openEndDrawer();
+                  globals.mainScaffoldKey.currentState.openEndDrawer();
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
                       showMaterialModalBottomSheet(
-                        context: globals.drawerKey.currentContext,
-                        builder: (context) => AboutUs(),
+                        context: globals.mainScaffoldKey.currentContext,
+                        builder: (context) => AboutUsModal(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: false,
+                        enableDrag: true,
                       );
                     },
                   );
@@ -154,35 +154,16 @@ class SideDrawer extends StatelessWidget {
                 ),
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
-                  globals.drawerKey.currentState.openEndDrawer();
+                  globals.mainScaffoldKey.currentState.openEndDrawer();
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
                       showMaterialModalBottomSheet(
-                        context: globals.drawerKey.currentContext,
-                        builder: (context) => ContactUs(),
+                        context: globals.mainScaffoldKey.currentContext,
+                        builder: (context) => ContactUsModal(),
                         duration: Duration(milliseconds: 500),
-                        enableDrag: false,
+                        enableDrag: true,
                       );
-                    },
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(CupertinoIcons.question_circle),
-                title: Text(
-                  'راهنمای استفاده',
-                  style: TextStyle(
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-                trailing: Icon(Icons.arrow_right),
-                onTap: () {
-                  globals.drawerKey.currentState.openEndDrawer();
-                  Future.delayed(
-                    Duration(milliseconds: 250),
-                    () {
-
                     },
                   );
                 },
