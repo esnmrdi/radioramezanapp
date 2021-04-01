@@ -50,19 +50,19 @@ class RadioRamezanColors {
   );
 }
 
-// final lightTheme = ThemeData(
-//   primaryColor: RadioRamezanColors.ramady,
-//   accentColor: RadioRamezanColors.ramady,
-//   fontFamily: 'Sans',
-//   brightness: Brightness.light,
-// );
+final lightTheme = ThemeData(
+  primaryColor: RadioRamezanColors.ramady,
+  accentColor: RadioRamezanColors.ramady,
+  fontFamily: 'Sans',
+  brightness: Brightness.light,
+);
 
-// final darkTheme = ThemeData(
-//   primaryColor: RadioRamezanColors.ramady,
-//   accentColor: RadioRamezanColors.ramady,
-//   fontFamily: 'Sans',
-//   brightness: Brightness.dark,
-// );
+final darkTheme = ThemeData(
+  primaryColor: RadioRamezanColors.ramady,
+  accentColor: RadioRamezanColors.ramady,
+  fontFamily: 'Sans',
+  brightness: Brightness.dark,
+);
 
 void toggleBrightness(BuildContext context, bool value) {
   DynamicTheme.of(context).setBrightness(
