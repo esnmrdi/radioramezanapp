@@ -1,6 +1,5 @@
 // loading required packages
 import 'package:flutter/material.dart';
-import 'package:radioramezan/theme.dart';
 
 class Splash extends StatelessWidget {
   @override
@@ -8,7 +7,7 @@ class Splash extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: RadioRamezanColors.ramady,
+        backgroundColor: Theme.of(context).primaryColor,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -24,7 +23,7 @@ class Splash extends StatelessWidget {
               ),
               SizedBox(height: 15),
               Text(
-                'دریافت اطلاعات از سرور ...',
+                'دریافت اطلاعات از سرور',
                 style: TextStyle(
                   fontFamily: 'Sans',
                   color: Colors.white,
