@@ -5,10 +5,10 @@ import 'package:radioramezan/globals.dart';
 
 class Advertisements extends StatefulWidget {
   @override
-  _Advertisements createState() => _Advertisements();
+  AdvertisementsState createState() => AdvertisementsState();
 }
 
-class _Advertisements extends State<Advertisements> {
+class AdvertisementsState extends State<Advertisements> {
   @override
   void initState() {
     super.initState();
