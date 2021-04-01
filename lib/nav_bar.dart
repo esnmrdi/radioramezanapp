@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:radioramezan/globals.dart';
-import 'package:radioramezan/theme.dart';
 
 class NavBar extends StatelessWidget {
   @override
@@ -13,22 +12,22 @@ class NavBar extends StatelessWidget {
         color: Theme.of(context).brightness == Brightness.dark
             ? Color.fromRGBO(33, 33, 33, 1.0)
             : Theme.of(context).primaryColor,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 20,
-            color: Colors.black.withOpacity(.1),
-          )
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     blurRadius: 20,
+        //     color: Colors.black.withOpacity(.1),
+        //   )
+        // ],
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: GNav(
           gap: 0,
           activeColor: Theme.of(context).brightness == Brightness.dark
               ? Colors.white
               : Theme.of(context).primaryColor,
           iconSize: 28,
-          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 6),
           duration: Duration(milliseconds: 500),
           tabBackgroundColor: Colors.white,
           tabs: [
