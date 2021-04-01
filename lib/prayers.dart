@@ -4,15 +4,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/data_models/prayer_model.dart';
-import 'package:radioramezan/prayer_view.dart';
+import 'package:radioramezan/prayer_view_modal.dart';
 import 'theme.dart';
 
 class Prayers extends StatefulWidget {
   @override
-  _Prayers createState() => _Prayers();
+  PrayersState createState() => PrayersState();
 }
 
-class _Prayers extends State<Prayers> {
+class PrayersState extends State<Prayers> {
   List<Prayer> searchResult = [];
   TextEditingController searchController;
   bool showSearchBox;
@@ -79,11 +79,11 @@ class _Prayers extends State<Prayers> {
                                 () {
                                   showMaterialModalBottomSheet(
                                     context: context,
-                                    builder: (context) => PrayerView(
+                                    builder: (context) => PrayerViewModal(
                                       prayer: prayer,
                                     ),
                                     duration: Duration(milliseconds: 500),
-                                    enableDrag: false,
+                                    enableDrag: true,
                                   );
                                 },
                               );
@@ -169,7 +169,7 @@ class _Prayers extends State<Prayers> {
                 bottom: 10,
                 child: FloatingActionButton(
                   elevation: 2,
-                  backgroundColor: RadioRamezanColors.ramady,
+                  backgroundColor: Theme.of(context).primaryColor,
                   child: Icon(CupertinoIcons.search),
                   onPressed: () {
                     setState(() {
