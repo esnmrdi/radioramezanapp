@@ -6,10 +6,10 @@ import 'package:radioramezan/theme.dart';
 
 class AppSettings extends StatefulWidget {
   @override
-  _AppSettings createState() => _AppSettings();
+  AppSettingsState createState() => AppSettingsState();
 }
 
-class _AppSettings extends State<AppSettings> {
+class AppSettingsState extends State<AppSettings> {
   @override
   void initState() {
     super.initState();
