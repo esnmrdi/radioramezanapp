@@ -1,12 +1,14 @@
 // loading required packages
 import 'dart:math';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:vector_math/vector_math.dart' as vmath;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 
@@ -147,65 +149,69 @@ class QiblaState extends State<Qibla> {
         ],
         brightness: Brightness.dark,
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return Container(
-            child: Stack(
-              alignment: Alignment(.0, .0),
-              children: <Widget>[
-                Container(
-                  child: GoogleMap(
-                    mapType: MapType.hybrid,
-                    zoomControlsEnabled: true,
-                    zoomGesturesEnabled: true,
-                    rotateGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    initialCameraPosition: montrealCameraPosition,
-                    onMapCreated: (GoogleMapController controller) {
-                      mapController.complete(controller);
-                      kaabaOffset =
-                          kaabaOffsetFromNorth(montrealCameraPosition);
-                    },
-                    onCameraMove: (CameraPosition mapCameraPosition) {
-                      setState(() {
-                        kaabaOffset = kaabaOffsetFromNorth(
-                          mapCameraPosition,
-                        );
-                      });
-                    },
-                    onCameraIdle: () {},
+      body: kIsWeb
+          ? Center(
+              child: Text('قبله نما فعلا در نسخه وب غیرفعال است.'),
+            )
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                return Container(
+                  child: Stack(
+                    alignment: Alignment(.0, .0),
+                    children: <Widget>[
+                      Container(
+                        child: GoogleMap(
+                          mapType: MapType.hybrid,
+                          zoomControlsEnabled: true,
+                          zoomGesturesEnabled: true,
+                          rotateGesturesEnabled: false,
+                          tiltGesturesEnabled: false,
+                          myLocationEnabled: true,
+                          myLocationButtonEnabled: false,
+                          initialCameraPosition: montrealCameraPosition,
+                          onMapCreated: (GoogleMapController controller) {
+                            mapController.complete(controller);
+                            kaabaOffset =
+                                kaabaOffsetFromNorth(montrealCameraPosition);
+                          },
+                          onCameraMove: (CameraPosition mapCameraPosition) {
+                            setState(() {
+                              kaabaOffset = kaabaOffsetFromNorth(
+                                mapCameraPosition,
+                              );
+                            });
+                          },
+                          onCameraIdle: () {},
+                        ),
+                      ),
+                      Positioned(
+                        child: IgnorePointer(
+                          child: Image.asset('images/compass.png'),
+                        ),
+                      ),
+                      Positioned(
+                        top: (constraints.maxHeight / 2) +
+                            .9 *
+                                (constraints.maxWidth / 2) *
+                                sin(-(pi / 2 - kaabaOffset)) -
+                            18,
+                        left: (constraints.maxWidth / 2) +
+                            .9 *
+                                (constraints.maxWidth / 2) *
+                                cos(-(pi / 2 - kaabaOffset)) -
+                            18,
+                        child: IgnorePointer(
+                          child: Image.asset(
+                            'images/kaaba.png',
+                            height: 36,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Positioned(
-                  child: IgnorePointer(
-                    child: Image.asset('assets/images/compass.png'),
-                  ),
-                ),
-                Positioned(
-                  top: (constraints.maxHeight / 2) +
-                      .9 *
-                          (constraints.maxWidth / 2) *
-                          sin(-(pi / 2 - kaabaOffset)) -
-                      18,
-                  left: (constraints.maxWidth / 2) +
-                      .9 *
-                          (constraints.maxWidth / 2) *
-                          cos(-(pi / 2 - kaabaOffset)) -
-                      18,
-                  child: IgnorePointer(
-                    child: Image.asset(
-                      'assets/images/kaaba.png',
-                      height: 36,
-                    ),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
