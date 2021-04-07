@@ -1,6 +1,8 @@
 // loading required packages
+import 'dart:math';
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
@@ -153,7 +155,7 @@ class Globals {
   }
 
   Future<Null> loadPrayerList() async {
-    final response = await rootBundle.loadString('assets/texts/prayers.json');
+    final response = await rootBundle.loadString('texts/prayers.json');
     prayerList.clear();
     prayerList =
         (json.decode(response) as List).map((i) => Prayer.fromJson(i)).toList();
@@ -247,25 +249,25 @@ class Globals {
       sobh.subtract(Duration(minutes: 2)).difference(
             tz.TZDateTime.now(timeZone),
           ),
-      () => loadAzanNotificationAudio('assets/audios/azan_alert_2.mp3'),
+      () => loadAzanNotificationAudio('audios/azan_alert_2.mp3'),
     );
     fiveMinBeforeSobh = Timer(
       sobh.subtract(Duration(minutes: 5)).difference(
             tz.TZDateTime.now(timeZone),
           ),
-      () => loadAzanNotificationAudio('assets/audios/azan_alert_5.mp3'),
+      () => loadAzanNotificationAudio('audios/azan_alert_5.mp3'),
     );
     tenMinBeforeSobh = Timer(
       sobh.subtract(Duration(minutes: 10)).difference(
             tz.TZDateTime.now(timeZone),
           ),
-      () => loadAzanNotificationAudio('assets/audios/azan_alert_10.mp3'),
+      () => loadAzanNotificationAudio('audios/azan_alert_10.mp3'),
     );
     twentyMinBeforeSobh = Timer(
       sobh.subtract(Duration(minutes: 20)).difference(
             tz.TZDateTime.now(timeZone),
           ),
-      () => loadAzanNotificationAudio('assets/audios/azan_alert_20.mp3'),
+      () => loadAzanNotificationAudio('audios/azan_alert_20.mp3'),
     );
   }
 
@@ -425,6 +427,10 @@ class Globals {
     }
   }
 
+  String fixPath(String path) {
+    return kIsWeb ? 'assets/' + path : path;
+  }
+
   Route createRoute(Widget newPage) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => newPage,
@@ -511,7 +517,7 @@ class Globals {
       album: null,
     );
     webTopPaddingFAB = 30;
-    webAspectRatio = 16 / 9;
+    webAspectRatio = (1 + sqrt(5)) / 2;
     adAspectRatio = 640 / 100;
     await fetchCityList();
     await Future.wait([
