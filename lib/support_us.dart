@@ -1,16 +1,19 @@
 // loading required packages
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:radioramezan/globals.dart';
 
-class SupportUsModal extends StatefulWidget {
+class SupportUs extends StatefulWidget {
   @override
-  SupportUsModalState createState() => SupportUsModalState();
+  SupportUsState createState() => SupportUsState();
 }
 
-class SupportUsModalState extends State<SupportUsModal> {
-  GlobalKey<ScaffoldState> supportUsModalScaffoldState;
+class SupportUsState extends State<SupportUs> {
+  GlobalKey<ScaffoldState> supportUsScaffoldState;
+  ScrollController scrollController;
   String paypalURL;
   String paypingURL;
 
@@ -20,7 +23,8 @@ class SupportUsModalState extends State<SupportUsModal> {
 
   @override
   void initState() {
-    supportUsModalScaffoldState = GlobalKey<ScaffoldState>();
+    supportUsScaffoldState = GlobalKey<ScaffoldState>();
+    scrollController = ScrollController();
     paypalURL = 'https://www.paypal.com/paypalme2/RadioRamezan';
     paypingURL = 'https://www.payping.ir/@radioramezan';
     super.initState();
@@ -28,134 +32,162 @@ class SupportUsModalState extends State<SupportUsModal> {
 
   @override
   void dispose() {
+    scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height -
-          MediaQuery.of(context).padding.top,
-      child: Scaffold(
-        key: supportUsModalScaffoldState,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButton: Align(
-          alignment: Alignment.topLeft,
-          child: Padding(
-            padding: EdgeInsets.only(top: 30),
-            child: FloatingActionButton(
-              elevation: 2,
-              backgroundColor: Theme.of(context).primaryColor,
-              child: Icon(CupertinoIcons.arrow_left),
-              onPressed: () {
-                setState(() {
+      margin:
+          kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
+              ? EdgeInsets.symmetric(
+                  horizontal: (MediaQuery.of(context).size.width -
+                          MediaQuery.of(context).size.height /
+                              globals.webAspectRatio) /
+                      2)
+              : null,
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      child: ClipRRect(
+        child: Scaffold(
+          key: supportUsScaffoldState,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          floatingActionButton: Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: kIsWeb
+                    ? globals.webTopPaddingFAB
+                    : MediaQuery.of(context).padding.top,
+              ),
+              child: FloatingActionButton(
+                elevation: 2,
+                backgroundColor: Theme.of(context).primaryColor,
+                child: Icon(CupertinoIcons.arrow_left),
+                onPressed: () {
                   Navigator.pop(context);
-                });
+                },
+              ),
+            ),
+          ),
+          body: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/golden_mosque_20percent.png'),
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.bottomCenter,
+              ),
+            ),
+            foregroundDecoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/modal_top.png'),
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.topCenter,
+              ),
+            ),
+            child: FutureBuilder(
+              future: loadTextAsset('texts/support_us.txt'),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height: .25 *
+                            (kIsWeb
+                                ? MediaQuery.of(context).size.height /
+                                    globals.webAspectRatio
+                                : MediaQuery.of(context).size.width),
+                      ),
+                      Container(
+                        child: Text(
+                          'حمایت مالی',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Expanded(
+                        flex: 1,
+                        child: DraggableScrollbar.semicircle(
+                          controller: scrollController,
+                          child: ListView.builder(
+                            controller: scrollController,
+                            padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            itemCount: 1,
+                            itemBuilder: (context, index) {
+                              return Column(
+                                children: <Widget>[
+                                  Text(snapshot.data),
+                                  SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        flex: 1,
+                                        child: MaterialButton(
+                                          elevation: 2,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          color: Colors.white,
+                                          onPressed: () {
+                                            globals.launchURL(paypalURL);
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 10),
+                                            child: Image.asset(
+                                              'images/paypal.png',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 20),
+                                      Expanded(
+                                        flex: 1,
+                                        child: MaterialButton(
+                                          elevation: 2,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          color: Colors.white,
+                                          onPressed: () {
+                                            globals.launchURL(paypingURL);
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 5, vertical: 10),
+                                            child: Image.asset(
+                                                'images/payping.png'),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text("${snapshot.error}"),
+                  );
+                }
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
               },
             ),
-          ),
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/golden_mosque_20percent.png'),
-              fit: BoxFit.fitWidth,
-              alignment: Alignment.bottomCenter,
-            ),
-          ),
-          foregroundDecoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/modal_top.png'),
-              fit: BoxFit.fitWidth,
-              alignment: Alignment.topCenter,
-            ),
-          ),
-          child: FutureBuilder(
-            future: loadTextAsset('assets/texts/support_us.txt'),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Column(
-                  children: <Widget>[
-                    SizedBox(height: 90),
-                    Container(
-                      child: Text(
-                        'حمایت مالی',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Expanded(
-                      flex: 1,
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        child: Column(
-                          children: <Widget>[
-                            Text(snapshot.data),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  flex: 1,
-                                  child: MaterialButton(
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      globals.launchURL(paypalURL);
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 10),
-                                      child: Image.asset(
-                                        'assets/images/paypal.png',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 20),
-                                Expanded(
-                                  flex: 1,
-                                  child: MaterialButton(
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    color: Colors.white,
-                                    onPressed: () {
-                                      globals.launchURL(paypingURL);
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 10),
-                                      child: Image.asset(
-                                          'assets/images/payping.png'),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text("${snapshot.error}"),
-                );
-              }
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            },
           ),
         ),
       ),
