@@ -1,16 +1,16 @@
 // loading required packages
 import 'package:flutter/material.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:radioramezan/globals.dart';
-import 'package:radioramezan/radio_modal.dart';
+import 'package:radioramezan/radio_panel.dart';
 
 class RadioBar extends StatefulWidget {
   @override
   RadioBarState createState() => RadioBarState();
 }
 
-class RadioBarState extends State<RadioBar> with SingleTickerProviderStateMixin {
+class RadioBarState extends State<RadioBar>
+    with SingleTickerProviderStateMixin {
   @override
   void initState() {
     globals.playPauseAnimationController = AnimationController(
@@ -21,6 +21,8 @@ class RadioBarState extends State<RadioBar> with SingleTickerProviderStateMixin 
       curve: Curves.linear,
       parent: globals.playPauseAnimationController,
     );
+    if (!globals.radioPlayerIsPaused)
+      globals.playPauseAnimationController.forward();
     super.initState();
   }
 
@@ -37,7 +39,7 @@ class RadioBarState extends State<RadioBar> with SingleTickerProviderStateMixin 
         image: DecorationImage(
           image: AssetImage('assets/images/golden_mosque_50percent.png'),
           fit: BoxFit.fitHeight,
-          alignment: Alignment.bottomLeft,
+          alignment: Alignment.lerp(Alignment.centerLeft, Alignment.center, .5),
         ),
         boxShadow: [
           BoxShadow(
@@ -55,11 +57,8 @@ class RadioBarState extends State<RadioBar> with SingleTickerProviderStateMixin 
             Future.delayed(
               Duration(milliseconds: 250),
               () {
-                showMaterialModalBottomSheet(
-                  context: context,
-                  builder: (context) => RadioModal(),
-                  duration: Duration(milliseconds: 500),
-                  enableDrag: true,
+                Navigator.of(context).push(
+                  globals.createRoute(RadioPanel()),
                 );
               },
             );
