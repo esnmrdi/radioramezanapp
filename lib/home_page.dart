@@ -2,13 +2,15 @@
 import 'dart:async';
 import 'dart:ui';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cron/cron.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:timezone/timezone.dart' as tz;
+// import 'package:flutter_analog_clock/flutter_analog_clock.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/path_painter.dart';
-import 'package:radioramezan/radio_modal.dart';
+import 'package:radioramezan/radio_panel.dart';
 import 'package:radioramezan/theme.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,18 +18,20 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   GlobalKey<ScaffoldState> homePageScaffoldKey;
-  Cron midnightCron = Cron();
+  Cron dailyCron = Cron();
   Cron liveHomePageCron = Cron();
+  AnimationController sunAnimationController;
+  Animation sunAnimation;
   Path horizonPath, sunPath, verticalPathOne, verticalPathTwo;
   Size canvasSize;
   Paint horizonPaint, sunPaint;
   Offset sunOffset;
-  AnimationController sunAnimationController;
-  Animation sunAnimation;
   Map<String, String> gregorianMonthNames;
   Map<String, String> hijriMonthNames;
+  double dayProgress, previousDayProgress;
 
   Path drawHorizontalPath(double x1, double x2, double y) {
     Path path = Path();
@@ -65,12 +69,20 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
   @override
   void initState() {
     homePageScaffoldKey = GlobalKey<ScaffoldState>();
-    midnightCron.schedule(Schedule.parse('0 0 * * *'), () async {
-      await globals.midnightCron();
+    dailyCron.schedule(Schedule.parse('0 0 * * *'), () async {
+      await globals.dailyUpdate();
       setState(() {});
     });
     liveHomePageCron.schedule(Schedule.parse('*/1 * * * *'), () async {
-      setState(() {});
+      previousDayProgress = dayProgress;
+      dayProgress = (tz.TZDateTime.now(globals.timeZone).hour * 60 +
+              tz.TZDateTime.now(globals.timeZone).minute) /
+          1440;
+      sunAnimation = Tween(begin: previousDayProgress, end: dayProgress)
+          .animate(sunAnimation);
+      setState(() {
+        sunAnimationController.forward();
+      });
     });
     gregorianMonthNames = {
       '1': 'JAN',
@@ -116,12 +128,12 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
       parent: sunAnimationController,
       curve: Curves.easeOut,
     );
-    sunAnimation = Tween(
-            begin: .0,
-            end: (DateTime.now().hour * 60 + DateTime.now().minute) / 1440)
-        .animate(sunAnimation);
+    dayProgress = (tz.TZDateTime.now(globals.timeZone).hour * 60 +
+            tz.TZDateTime.now(globals.timeZone).minute) /
+        1440;
+    sunAnimation = Tween(begin: .0, end: dayProgress).animate(sunAnimation);
     Future.delayed(Duration(seconds: 2), () {
-      sunAnimationController.forward(from: 0);
+      sunAnimationController.forward();
     });
     super.initState();
   }
@@ -159,12 +171,9 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
               Future.delayed(
                 Duration(milliseconds: 250),
                 () {
-                  showMaterialModalBottomSheet(
-                    context: context,
-                    builder: (context) => RadioModal(),
-                    duration: Duration(milliseconds: 500),
-                    enableDrag: true,
-                  );
+                Navigator.of(context).push(
+                  globals.createRoute(RadioPanel()),
+                );
                 },
               );
             },
@@ -173,20 +182,11 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
         brightness: Brightness.dark,
       ),
       body: Container(
-        width: MediaQuery.of(context).size.width,
+        width: kIsWeb
+            ? MediaQuery.of(context).size.height / globals.webAspectRatio
+            : MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor.withOpacity(.5),
-          // gradient: RadialGradient(
-          //   center: Alignment.topCenter,
-          //   colors: [
-          //     Theme.of(context).primaryColor.withOpacity(.2),
-          //     Colors.white,
-          //     Theme.of(context).primaryColor.withOpacity(.2),
-          //   ],
-          //   radius: 1.5,
-          //   stops: [.0, .7, 1.0],
-          //   tileMode: TileMode.clamp,
-          // ),
         ),
         foregroundDecoration: BoxDecoration(
           image: DecorationImage(
@@ -195,8 +195,12 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
               alignment: Alignment.topCenter),
         ),
         child: Container(
-          padding:
-              EdgeInsets.only(top: .22 * MediaQuery.of(context).size.width),
+          padding: EdgeInsets.only(
+            top: .25 *
+                (kIsWeb
+                    ? MediaQuery.of(context).size.height / globals.webAspectRatio
+                    : MediaQuery.of(context).size.width),
+          ),
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/images/mosque_frame_edge.png'),
@@ -210,150 +214,170 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Container(
-                    height: .4 * constraints.maxHeight,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/city_frame.png'),
+                        fit: BoxFit.fitHeight,
+                        alignment: Alignment.center,
+                      ),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(8),
+                        ),
+                        onTap: () {
+                          globals.pageController.jumpToPage(4);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'امکان تغییر شهر در بخش تنظیمات مهیاست.',
+                                style: TextStyle(fontFamily: 'Sans'),
+                              ),
+                              duration: Duration(seconds: 5),
+                              behavior: SnackBarBehavior.floating,
+                              action: SnackBarAction(
+                                textColor: RadioRamezanColors.goldy,
+                                label: 'باشه!',
+                                onPressed: () {},
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          height: .125 * constraints.maxHeight,
+                          width: (360 / 127) * .125 * constraints.maxHeight,
+                          child: Center(
+                            child: Text(
+                              globals.city.countryNameFa +
+                                  ' : ' +
+                                  globals.city.cityNameFa,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  Container(
                     width: .85 * constraints.maxWidth,
-                    child: Stack(
-                      alignment: Alignment.topCenter,
-                      children: [
+                    padding: EdgeInsets.symmetric(horizontal: 25),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
                         Container(
-                          height: .15 * constraints.maxHeight,
+                          height: .2 * constraints.maxHeight,
                           child: Stack(
                             alignment: AlignmentDirectional.center,
                             children: [
-                              Image.asset(
-                                'assets/images/city_frame.png',
-                                fit: BoxFit.fill,
-                              ),
-                              Text(
-                                globals.city.countryNameFa +
-                                    ' : ' +
-                                    globals.city.cityNameFa,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 14,
+                              Image.asset('assets/images/date_frame.png'),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: .075 * constraints.maxHeight),
+                                child: Text(
+                                  json.decode(globals.jalaliDate)['month'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
                                 ),
-                                textAlign: TextAlign.left,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: .075 * constraints.maxHeight),
+                                child: Text(
+                                  json.decode(globals.jalaliDate)['day'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 24,
+                                    color: Colors.black,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        Positioned(
-                          right: .075 * constraints.maxWidth,
-                          top: .13 * constraints.maxHeight,
-                          child: Container(
-                            height: .2 * constraints.maxHeight,
-                            child: Stack(
-                              alignment: AlignmentDirectional.center,
-                              children: [
-                                Image.asset('assets/images/date_frame.png'),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      bottom: .075 * constraints.maxHeight),
-                                  child: Text(
-                                    json.decode(globals.jalaliDate)['month'],
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
+                        Container(
+                          height: .2 * constraints.maxHeight,
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              Image.asset('assets/images/date_frame.png'),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: .065 * constraints.maxHeight),
+                                child: Text(
+                                  gregorianMonthNames[json
+                                      .decode(globals.gregorianDate)['month']],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      top: .075 * constraints.maxHeight),
-                                  child: Text(
-                                    json.decode(globals.jalaliDate)['day'],
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 24,
-                                      color: Colors.black,
-                                    ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: .075 * constraints.maxHeight),
+                                child: Text(
+                                  json.decode(globals.gregorianDate)['day'],
+                                  style: TextStyle(
+                                    fontFamily: '',
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 24,
+                                    color: Colors.black,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                        Positioned(
-                          top: .18 * constraints.maxHeight,
-                          child: Container(
-                            height: .2 * constraints.maxHeight,
-                            child: Stack(
-                              alignment: AlignmentDirectional.center,
-                              children: [
-                                Image.asset('assets/images/date_frame.png'),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      bottom: .065 * constraints.maxHeight),
-                                  child: Text(
-                                    gregorianMonthNames[json.decode(
-                                        globals.gregorianDate)['month']],
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
+                        Container(
+                          height: .2 * constraints.maxHeight,
+                          child: Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              Image.asset('assets/images/date_frame.png'),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: .075 * constraints.maxHeight),
+                                child: Text(
+                                  hijriMonthNames[
+                                      json.decode(globals.hijriDate)['month']],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      top: .075 * constraints.maxHeight),
-                                  child: Text(
-                                    json.decode(globals.gregorianDate)['day'],
-                                    style: TextStyle(
-                                      fontFamily: '',
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 24,
-                                      color: Colors.black,
-                                    ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: .075 * constraints.maxHeight),
+                                child: Text(
+                                  json.decode(globals.hijriDate)['day'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 24,
+                                    color: Colors.black,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: .075 * constraints.maxWidth,
-                          top: .13 * constraints.maxHeight,
-                          child: Container(
-                            height: .2 * constraints.maxHeight,
-                            child: Stack(
-                              alignment: AlignmentDirectional.center,
-                              children: [
-                                Image.asset('assets/images/date_frame.png'),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      bottom: .075 * constraints.maxHeight),
-                                  child: Text(
-                                    hijriMonthNames[json
-                                        .decode(globals.hijriDate)['month']],
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      top: .075 * constraints.maxHeight),
-                                  child: Text(
-                                    json.decode(globals.hijriDate)['day'],
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 24,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
+                  SizedBox(height: 20),
                   Expanded(
                     flex: 1,
                     child: LayoutBuilder(
@@ -397,6 +421,36 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                                         size: 24,
                                       ),
                                     ),
+                                    // Center(
+                                    //   child: Padding(
+                                    //     padding: EdgeInsets.only(
+                                    //         top: .0 * canvasSize.height),
+                                    //     child: FlutterAnalogClock(
+                                    //       dateTime: tz.TZDateTime.now(
+                                    //           globals.timeZone),
+                                    //       dialPlateColor: Colors.white,
+                                    //       hourHandColor: Colors.black,
+                                    //       minuteHandColor: Colors.black,
+                                    //       secondHandColor: Colors.red,
+                                    //       numberColor:
+                                    //           Theme.of(context).primaryColor,
+                                    //       borderColor:
+                                    //           Theme.of(context).primaryColor,
+                                    //       tickColor: Colors.black,
+                                    //       centerPointColor: Colors.black,
+                                    //       showBorder: true,
+                                    //       showTicks: true,
+                                    //       showMinuteHand: true,
+                                    //       showSecondHand: true,
+                                    //       showNumber: true,
+                                    //       borderWidth: 1.5,
+                                    //       hourNumberScale: 1,
+                                    //       isLive: true,
+                                    //       height: .2 * constraints.maxHeight,
+                                    //       decoration: BoxDecoration(),
+                                    //     ),
+                                    //   ),
+                                    // ),
                                     Container(
                                       child: Row(
                                         mainAxisAlignment:
@@ -478,7 +532,8 @@ class HomePageState extends State<HomePage> with SingleTickerProviderStateMixin 
                                       ),
                                     ),
                                     Positioned(
-                                      top: .75 * canvasConstraints.maxHeight,
+                                      // top: .75 * canvasConstraints.maxHeight,
+                                      bottom: 0,
                                       child: Container(
                                         width: .85 * constraints.maxWidth,
                                         child: Center(
