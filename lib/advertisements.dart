@@ -1,29 +1,20 @@
 // loading required packages
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:radioramezan/globals.dart';
 
-class Advertisements extends StatefulWidget {
-  @override
-  AdvertisementsState createState() => AdvertisementsState();
-}
-
-class AdvertisementsState extends State<Advertisements> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
+class Advertisements extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.width / 6.4,
-      width: MediaQuery.of(context).size.width,
+      height: kIsWeb
+          ? (MediaQuery.of(context).size.height / globals.webAspectRatio) /
+              globals.adAspectRatio
+          : MediaQuery.of(context).size.width / globals.adAspectRatio,
+      width: kIsWeb
+          ? (MediaQuery.of(context).size.height / globals.webAspectRatio)
+          : MediaQuery.of(context).size.width,
       margin: EdgeInsets.zero,
       child: CarouselSlider(
         options: CarouselOptions(
