@@ -12,12 +12,6 @@ class NavBar extends StatelessWidget {
         color: Theme.of(context).brightness == Brightness.dark
             ? Color.fromRGBO(33, 33, 33, 1.0)
             : Theme.of(context).primaryColor,
-        // boxShadow: [
-        //   BoxShadow(
-        //     blurRadius: 20,
-        //     color: Colors.black.withOpacity(.1),
-        //   )
-        // ],
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
