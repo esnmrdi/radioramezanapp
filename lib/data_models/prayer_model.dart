@@ -19,12 +19,14 @@ class Prayer {
   final String title;
   final String reciter;
   final String audio;
+  String category;
   final List<Verse> verses;
 
   Prayer({
     this.title,
     this.reciter,
     this.audio,
+    this.category,
     this.verses,
   });
 
@@ -35,6 +37,7 @@ class Prayer {
       title: parsedJson['title'],
       reciter: parsedJson['reciter'],
       audio: parsedJson['audio'],
+      category: parsedJson['category'],
       verses: _verses,
     );
   }
