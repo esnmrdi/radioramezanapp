@@ -149,347 +149,353 @@ class ContactUsState extends State<ContactUs> {
                       2)
               : null,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-      child: Scaffold(
-        key: contactUsScaffoldState,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButton: Align(
-          alignment: Alignment.topLeft,
-          child: Padding(
-            padding: EdgeInsets.only(
-              top: kIsWeb
-                  ? globals.webTopPaddingFAB
-                  : MediaQuery.of(context).padding.top,
-            ),
-            child: FloatingActionButton(
-              elevation: 2,
-              backgroundColor: Theme.of(context).primaryColor,
-              child: Icon(CupertinoIcons.arrow_left),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/golden_mosque_20percent.png'),
-              fit: BoxFit.fitWidth,
-              alignment: Alignment.bottomCenter,
+      child: ClipRRect(
+        child: Scaffold(
+          key: contactUsScaffoldState,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          floatingActionButton: Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: kIsWeb
+                    ? globals.webTopPaddingFAB
+                    : MediaQuery.of(context).padding.top,
+              ),
+              child: FloatingActionButton(
+                elevation: 2,
+                backgroundColor: Theme.of(context).primaryColor,
+                child: Icon(CupertinoIcons.arrow_left),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
             ),
           ),
-          foregroundDecoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/modal_top.png'),
-              fit: BoxFit.fitWidth,
-              alignment: Alignment.topCenter,
+          body: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/golden_mosque_20percent.png'),
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.bottomCenter,
+              ),
             ),
-          ),
-          child: FutureBuilder(
-            future: loadTextAsset('assets/texts/contact_us.txt'),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Column(
-                  children: <Widget>[
-                    SizedBox(
-                      height: .25 *
-                          (kIsWeb
-                              ? MediaQuery.of(context).size.height /
-                                  globals.webAspectRatio
-                              : MediaQuery.of(context).size.width),
-                    ),
-                    Container(
-                      child: Text(
-                        'ارتباط با ما',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+            foregroundDecoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/modal_top.png'),
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.topCenter,
+              ),
+            ),
+            child: FutureBuilder(
+              future: loadTextAsset('texts/contact_us.txt'),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height: .25 *
+                            (kIsWeb
+                                ? MediaQuery.of(context).size.height /
+                                    globals.webAspectRatio
+                                : MediaQuery.of(context).size.width),
+                      ),
+                      Container(
+                        child: Text(
+                          'ارتباط با ما',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    Expanded(
-                      flex: 1,
-                      child: DraggableScrollbar.semicircle(
-                        controller: scrollController,
-                        child: ListView.builder(
+                      SizedBox(height: 20),
+                      Expanded(
+                        flex: 1,
+                        child: DraggableScrollbar.semicircle(
                           controller: scrollController,
-                          padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                          itemCount: 1,
-                          itemBuilder: (context, index) {
-                            return Column(
-                              children: <Widget>[
-                                Text(snapshot.data),
-                                SizedBox(height: 20),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    Column(
-                                      children: [
-                                        InkWell(
-                                          customBorder: CircleBorder(),
-                                          child: CircleAvatar(
-                                            backgroundColor:
-                                                Color.fromRGBO(225, 48, 108, 1),
-                                            radius: 42,
-                                            child: Icon(
-                                              CupertinoIcons.phone,
-                                              size: 36,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          onTap: () {
-                                            launch("tel://+14388137453");
-                                          },
-                                        ),
-                                        SizedBox(height: 10),
-                                        Text('تماس مستقیم'),
-                                      ],
-                                    ),
-                                    Column(
-                                      children: [
-                                        InkWell(
-                                          customBorder: CircleBorder(),
-                                          child: CircleAvatar(
-                                            backgroundColor:
-                                                RadioRamezanColors.goldy,
-                                            radius: 42,
-                                            child: Icon(
-                                              CupertinoIcons.mail,
-                                              size: 36,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          onTap: () {
-                                            launch(
-                                                'mailto:abbas.soltanian@gmail.com');
-                                          },
-                                        ),
-                                        SizedBox(height: 10),
-                                        Text('ارسال ایمیل'),
-                                      ],
-                                    ),
-                                    Column(
-                                      children: [
-                                        InkWell(
-                                          customBorder: CircleBorder(),
-                                          child: CircleAvatar(
-                                            backgroundColor:
-                                                Color.fromRGBO(0, 136, 204, 1),
-                                            radius: 42,
-                                            child: Icon(
-                                              CupertinoIcons.paperplane,
-                                              size: 36,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          onTap: () {
-                                            launch(
-                                                'https://t.me/RadioRamezan2');
-                                          },
-                                        ),
-                                        SizedBox(height: 10),
-                                        Text('چت تلگرام'),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 20),
-                                Form(
-                                  key: messageFormKey,
-                                  child: Column(
-                                    children: <Widget>[
-                                      FormField(
-                                        builder: (FormFieldState state) {
-                                          return InputDecorator(
-                                            decoration: InputDecoration(
-                                              errorStyle: TextStyle(
-                                                color: Colors.redAccent,
-                                              ),
-                                              border: OutlineInputBorder(),
-                                            ),
-                                            isEmpty: true,
-                                            child: DropdownButtonHideUnderline(
-                                              child: DropdownButton<String>(
-                                                icon: Icon(CupertinoIcons
-                                                    .chevron_down),
-                                                hint: Text('موضوع'),
-                                                value: subjectValue,
-                                                isDense: true,
-                                                onChanged: (String newValue) {
-                                                  setState(() {
-                                                    subjectValue = newValue;
-                                                    state.didChange(newValue);
-                                                  });
-                                                },
-                                                items: [
-                                                  DropdownMenuItem(
-                                                    value: 'آمادگی جهت همکاری',
-                                                    child: Text(
-                                                        'آمادگی جهت همکاری'),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'حمایت مالی',
-                                                    child: Text('حمایت مالی'),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value:
-                                                        'درخواست تبلیغات در رادیو رمضان',
-                                                    child: Text(
-                                                        'درخواست تبلیغات در رادیو رمضان'),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'پیشنهاد و انتقاد',
-                                                    child: Text(
-                                                        'پیشنهاد و انتقاد'),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value:
-                                                        'گزارش مشکلات اپلیکیشن',
-                                                    child: Text(
-                                                        'گزارش مشکلات اپلیکیشن'),
-                                                  ),
-                                                ],
+                          child: ListView.builder(
+                            controller: scrollController,
+                            padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            itemCount: 1,
+                            itemBuilder: (context, index) {
+                              return Column(
+                                children: <Widget>[
+                                  Text(snapshot.data),
+                                  SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Column(
+                                        children: [
+                                          InkWell(
+                                            customBorder: CircleBorder(),
+                                            child: CircleAvatar(
+                                              backgroundColor: Color.fromRGBO(
+                                                  225, 48, 108, 1),
+                                              radius: 42,
+                                              child: Icon(
+                                                CupertinoIcons.phone,
+                                                size: 36,
+                                                color: Colors.white,
                                               ),
                                             ),
-                                          );
-                                        },
-                                      ),
-                                      SizedBox(
-                                        height: 20,
-                                      ),
-                                      TextFormField(
-                                        controller: senderController,
-                                        decoration: InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          labelText: 'نام کامل',
-                                          errorStyle: TextStyle(
-                                            color: Colors.redAccent,
+                                            onTap: () {
+                                              launch("tel://+14388137453");
+                                            },
                                           ),
-                                        ),
-                                        textInputAction: TextInputAction.next,
-                                        validator: (value) {
-                                          if (value.isEmpty)
-                                            return 'فیلد نام خالی است!';
-                                          return null;
-                                        },
+                                          SizedBox(height: 10),
+                                          Text('تماس مستقیم'),
+                                        ],
                                       ),
-                                      SizedBox(
-                                        height: 20,
-                                      ),
-                                      TextFormField(
-                                        controller: emailController,
-                                        decoration: InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          labelText: 'ایمیل',
-                                          errorStyle: TextStyle(
-                                            color: Colors.redAccent,
-                                          ),
-                                        ),
-                                        textDirection: TextDirection.ltr,
-                                        textInputAction: TextInputAction.next,
-                                        validator: (value) {
-                                          if (value.isEmpty)
-                                            return 'فیلد ایمیل خالی است!';
-                                          Pattern pattern =
-                                              '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}';
-                                          RegExp regex = RegExp(pattern);
-                                          if (!regex.hasMatch(value))
-                                            return 'ایمیل را در قالب صحیح وارد کنید!';
-                                          return null;
-                                        },
-                                      ),
-                                      SizedBox(
-                                        height: 20,
-                                      ),
-                                      TextFormField(
-                                        controller: messageController,
-                                        maxLines: 8,
-                                        decoration: InputDecoration(
-                                          alignLabelWithHint: true,
-                                          border: OutlineInputBorder(),
-                                          labelText: 'متن پیام',
-                                          errorStyle: TextStyle(
-                                            color: Colors.redAccent,
-                                          ),
-                                        ),
-                                        textInputAction: TextInputAction.done,
-                                        validator: (value) {
-                                          if (value.isEmpty)
-                                            return 'متن پیام خالی است!';
-                                          return null;
-                                        },
-                                      ),
-                                      SizedBox(
-                                        height: 20,
-                                      ),
-                                      Container(
-                                        height: 50,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        child: RawMaterialButton(
-                                          elevation: messageIsSending ? 0 : 2,
-                                          fillColor: messageIsSending
-                                              ? Theme.of(context).disabledColor
-                                              : Theme.of(context).primaryColor,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                          ),
-                                          onPressed: !messageIsSending
-                                              ? () {
-                                                  sendMail();
-                                                }
-                                              : null,
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 5,
-                                              vertical: 10,
+                                      Column(
+                                        children: [
+                                          InkWell(
+                                            customBorder: CircleBorder(),
+                                            child: CircleAvatar(
+                                              backgroundColor:
+                                                  RadioRamezanColors.goldy,
+                                              radius: 42,
+                                              child: Icon(
+                                                CupertinoIcons.mail,
+                                                size: 36,
+                                                color: Colors.white,
+                                              ),
                                             ),
-                                            child: !messageIsSending
-                                                ? Text(
-                                                    'ارسال پیام',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                    ),
-                                                  )
-                                                : Container(
-                                                    height: 24,
-                                                    width: 24,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                              Color>(
-                                                        Colors.white,
-                                                      ),
-                                                    ),
-                                                  ),
+                                            onTap: () {
+                                              launch(
+                                                  'mailto:abbas.soltanian@gmail.com');
+                                            },
                                           ),
-                                        ),
+                                          SizedBox(height: 10),
+                                          Text('ارسال ایمیل'),
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          InkWell(
+                                            customBorder: CircleBorder(),
+                                            child: CircleAvatar(
+                                              backgroundColor: Color.fromRGBO(
+                                                  0, 136, 204, 1),
+                                              radius: 42,
+                                              child: Icon(
+                                                CupertinoIcons.paperplane,
+                                                size: 36,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            onTap: () {
+                                              launch(
+                                                  'https://t.me/RadioRamezan2');
+                                            },
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text('چت تلگرام'),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
-                            );
-                          },
+                                  SizedBox(height: 20),
+                                  Form(
+                                    key: messageFormKey,
+                                    child: Column(
+                                      children: <Widget>[
+                                        FormField(
+                                          builder: (FormFieldState state) {
+                                            return InputDecorator(
+                                              decoration: InputDecoration(
+                                                errorStyle: TextStyle(
+                                                  color: Colors.redAccent,
+                                                ),
+                                                border: OutlineInputBorder(),
+                                              ),
+                                              isEmpty: true,
+                                              child:
+                                                  DropdownButtonHideUnderline(
+                                                child: DropdownButton<String>(
+                                                  icon: Icon(CupertinoIcons
+                                                      .chevron_down),
+                                                  hint: Text('موضوع'),
+                                                  value: subjectValue,
+                                                  isDense: true,
+                                                  onChanged: (String newValue) {
+                                                    setState(() {
+                                                      subjectValue = newValue;
+                                                      state.didChange(newValue);
+                                                    });
+                                                  },
+                                                  items: [
+                                                    DropdownMenuItem(
+                                                      value:
+                                                          'آمادگی جهت همکاری',
+                                                      child: Text(
+                                                          'آمادگی جهت همکاری'),
+                                                    ),
+                                                    DropdownMenuItem(
+                                                      value: 'حمایت مالی',
+                                                      child: Text('حمایت مالی'),
+                                                    ),
+                                                    DropdownMenuItem(
+                                                      value:
+                                                          'درخواست تبلیغات در رادیو رمضان',
+                                                      child: Text(
+                                                          'درخواست تبلیغات در رادیو رمضان'),
+                                                    ),
+                                                    DropdownMenuItem(
+                                                      value: 'پیشنهاد و انتقاد',
+                                                      child: Text(
+                                                          'پیشنهاد و انتقاد'),
+                                                    ),
+                                                    DropdownMenuItem(
+                                                      value:
+                                                          'گزارش مشکلات اپلیکیشن',
+                                                      child: Text(
+                                                          'گزارش مشکلات اپلیکیشن'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        SizedBox(
+                                          height: 20,
+                                        ),
+                                        TextFormField(
+                                          controller: senderController,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'نام کامل',
+                                            errorStyle: TextStyle(
+                                              color: Colors.redAccent,
+                                            ),
+                                          ),
+                                          textInputAction: TextInputAction.next,
+                                          validator: (value) {
+                                            if (value.isEmpty)
+                                              return 'فیلد نام خالی است!';
+                                            return null;
+                                          },
+                                        ),
+                                        SizedBox(
+                                          height: 20,
+                                        ),
+                                        TextFormField(
+                                          controller: emailController,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'ایمیل',
+                                            errorStyle: TextStyle(
+                                              color: Colors.redAccent,
+                                            ),
+                                          ),
+                                          textDirection: TextDirection.ltr,
+                                          textInputAction: TextInputAction.next,
+                                          validator: (value) {
+                                            if (value.isEmpty)
+                                              return 'فیلد ایمیل خالی است!';
+                                            Pattern pattern =
+                                                '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}';
+                                            RegExp regex = RegExp(pattern);
+                                            if (!regex.hasMatch(value))
+                                              return 'ایمیل را در قالب صحیح وارد کنید!';
+                                            return null;
+                                          },
+                                        ),
+                                        SizedBox(
+                                          height: 20,
+                                        ),
+                                        TextFormField(
+                                          controller: messageController,
+                                          maxLines: 8,
+                                          decoration: InputDecoration(
+                                            alignLabelWithHint: true,
+                                            border: OutlineInputBorder(),
+                                            labelText: 'متن پیام',
+                                            errorStyle: TextStyle(
+                                              color: Colors.redAccent,
+                                            ),
+                                          ),
+                                          textInputAction: TextInputAction.done,
+                                          validator: (value) {
+                                            if (value.isEmpty)
+                                              return 'متن پیام خالی است!';
+                                            return null;
+                                          },
+                                        ),
+                                        SizedBox(
+                                          height: 20,
+                                        ),
+                                        Container(
+                                          height: 50,
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: RawMaterialButton(
+                                            elevation: messageIsSending ? 0 : 2,
+                                            fillColor: messageIsSending
+                                                ? Theme.of(context)
+                                                    .disabledColor
+                                                : Theme.of(context)
+                                                    .primaryColor,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                            onPressed: !messageIsSending
+                                                ? () {
+                                                    sendMail();
+                                                  }
+                                                : null,
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 5,
+                                                vertical: 10,
+                                              ),
+                                              child: !messageIsSending
+                                                  ? Text(
+                                                      'ارسال پیام',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                      ),
+                                                    )
+                                                  : Container(
+                                                      height: 24,
+                                                      width: 24,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                                Color>(
+                                                          Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              } else if (snapshot.hasError) {
+                    ],
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text("${snapshot.error}"),
+                  );
+                }
                 return Center(
-                  child: Text("${snapshot.error}"),
+                  child: CircularProgressIndicator(),
                 );
-              }
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            },
+              },
+            ),
           ),
         ),
       ),
