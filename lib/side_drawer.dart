@@ -1,14 +1,13 @@
 // loading required packages
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share/share.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
-import 'package:radioramezan/about_us_modal.dart';
-import 'package:radioramezan/contact_us_modal.dart';
-import 'package:radioramezan/support_us_modal.dart';
-import 'package:radioramezan/monthly_owghat_modal.dart';
+import 'package:radioramezan/about_us.dart';
+import 'package:radioramezan/contact_us.dart';
+import 'package:radioramezan/monthly_owghat.dart';
 
 class SideDrawer extends StatelessWidget {
   Future<String> loadVersionNumber() async {
@@ -37,10 +36,14 @@ class SideDrawer extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
                     colors: [
-                      Color.fromRGBO(178, 73, 135, 1.0),
-                      Color.fromRGBO(128, 44, 96, 1.0),
+                      Settings.getValue<bool>("darkThemeEnabled", false)
+                          ? Color.fromRGBO(80, 80, 80, 1)
+                          : Color.fromRGBO(178, 73, 135, 1),
+                      Settings.getValue<bool>("darkThemeEnabled", false)
+                          ? Color.fromRGBO(50, 50, 50, 1)
+                          : Color.fromRGBO(128, 44, 96, 1),
                     ],
-                    radius: 1.0,
+                    radius: 1,
                     stops: [.0, 1],
                     tileMode: TileMode.clamp,
                   ),
@@ -64,35 +67,8 @@ class SideDrawer extends StatelessWidget {
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
-                      showMaterialModalBottomSheet(
-                        context: globals.mainScaffoldKey.currentContext,
-                        builder: (context) => MonthlyOwghatModal(),
-                        duration: Duration(milliseconds: 500),
-                        enableDrag: true,
-                      );
-                    },
-                  );
-                },
-              ),
-              ListTile(
-                leading: Icon(CupertinoIcons.money_dollar_circle),
-                title: Text(
-                  'حمایت مالی',
-                  style: TextStyle(
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-                trailing: Icon(Icons.arrow_right),
-                onTap: () {
-                  globals.mainScaffoldKey.currentState.openEndDrawer();
-                  Future.delayed(
-                    Duration(milliseconds: 250),
-                    () {
-                      showMaterialModalBottomSheet(
-                        context: globals.mainScaffoldKey.currentContext,
-                        builder: (context) => SupportUsModal(),
-                        duration: Duration(milliseconds: 500),
-                        enableDrag: true,
+                      Navigator.of(context).push(
+                        globals.createRoute(MonthlyOwghat()),
                       );
                     },
                   );
@@ -109,14 +85,9 @@ class SideDrawer extends StatelessWidget {
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
                   globals.mainScaffoldKey.currentState.openEndDrawer();
-                  Future.delayed(
-                    Duration(milliseconds: 250),
-                    () {
-                      Share.share(
-                        'https://m.radioramezan.com',
-                        subject: 'رادیو رمضان، همراه روزهای پر از معنویت شما',
-                      );
-                    },
+                  Share.share(
+                    'https://m.radioramezan.com',
+                    subject: 'رادیو رمضان، همراه روزهای پر از معنویت شما',
                   );
                 },
               ),
@@ -134,11 +105,8 @@ class SideDrawer extends StatelessWidget {
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
-                      showMaterialModalBottomSheet(
-                        context: globals.mainScaffoldKey.currentContext,
-                        builder: (context) => AboutUsModal(),
-                        duration: Duration(milliseconds: 500),
-                        enableDrag: true,
+                      Navigator.of(context).push(
+                        globals.createRoute(AboutUs()),
                       );
                     },
                   );
@@ -158,11 +126,8 @@ class SideDrawer extends StatelessWidget {
                   Future.delayed(
                     Duration(milliseconds: 250),
                     () {
-                      showMaterialModalBottomSheet(
-                        context: globals.mainScaffoldKey.currentContext,
-                        builder: (context) => ContactUsModal(),
-                        duration: Duration(milliseconds: 500),
-                        enableDrag: true,
+                      Navigator.of(context).push(
+                        globals.createRoute(ContactUs()),
                       );
                     },
                   );
