@@ -6,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:http/http.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:radioramezan/theme.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/data_models/radio_item_model.dart';
@@ -49,7 +51,7 @@ class ConductorState extends State<Conductor> {
       context,
       initialDate: pickedDate,
       firstDate: DateTime(2021),
-      lastDate: DateTime.now(),
+      lastDate: tz.TZDateTime.now(globals.timeZone),
       dateFormat: "dd-MMMM-yyyy",
       locale: DateTimePickerLocale.en_us,
       looping: false,
@@ -67,7 +69,8 @@ class ConductorState extends State<Conductor> {
     }
   }
 
-  Future<void> displayDetailsDialog(BuildContext context, RadioItem radioItem) async {
+  Future<void> displayDetailsDialog(
+      BuildContext context, RadioItem radioItem) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -76,40 +79,43 @@ class ConductorState extends State<Conductor> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(5),
-                  topRight: Radius.circular(5),
+          content: Container(
+            width: .75 * MediaQuery.of(context).size.height / globals.webAspectRatio,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(5),
+                    topRight: Radius.circular(5),
+                  ),
+                  child: Image.asset(
+                      'assets/images/poster_' + radioItem.category + '.jpg'),
                 ),
-                child: Image.asset(
-                    'assets/images/poster_' + radioItem.category + '.jpg'),
-              ),
-              Container(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  children: <Widget>[
-                    Text(
-                      radioItem.title,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                Container(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    children: <Widget>[
+                      Text(
+                        radioItem.title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      radioItem.description,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black54,
+                      SizedBox(height: 10),
+                      Text(
+                        radioItem.description,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.black54,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -119,10 +125,7 @@ class ConductorState extends State<Conductor> {
   @override
   void initState() {
     conductorScaffoldKey = GlobalKey<ScaffoldState>();
-    scrollController = ScrollController(
-        // initialScrollOffset: globals.currentAndNextItem[0] * 85.0,
-        // keepScrollOffset: false,
-        );
+    scrollController = ScrollController();
     isFetching = false;
     super.initState();
   }
@@ -163,120 +166,153 @@ class ConductorState extends State<Conductor> {
         brightness: Brightness.dark,
       ),
       body: Container(
-        color: Theme.of(context).primaryColor.withOpacity(.1),
+        color: Settings.getValue<bool>("darkThemeEnabled", false)
+            ? Color.fromRGBO(50, 50, 50, .5)
+            : Theme.of(context).primaryColor.withOpacity(.1),
         child: isFetching
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : DraggableScrollbar.semicircle(
-                controller: scrollController,
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                  itemCount: selectiveRadioItemList != null
-                      ? selectiveRadioItemList.length
-                      : globals.radioItemList.length,
-                  itemBuilder: (context, index) {
-                    RadioItem radioItem = selectiveRadioItemList != null
-                        ? selectiveRadioItemList[index]
-                        : globals.radioItemList[index];
-                    return Column(
-                      children: <Widget>[
-                        Card(
-                          elevation: 2,
-                          margin: EdgeInsets.zero,
-                          color: index == globals.currentAndNextItem[0] &&
-                                  (pickedDate == null ||
-                                      pickedDate
-                                              .difference(DateTime.now())
-                                              .inDays ==
-                                          0)
-                              ? RadioRamezanColors.goldy[100]
-                              : Colors.white,
-                          shadowColor: Colors.black.withOpacity(.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              Future.delayed(
-                                Duration(milliseconds: 250),
-                                () {
-                                  displayDetailsDialog(context, radioItem);
-                                },
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(5),
-                            child: ListTile(
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: radioItem.description != '' ? 2 : 10,
-                                horizontal: 10,
-                              ),
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(5),
-                                child: Image.asset('assets/images/poster_' +
-                                    radioItem.category +
-                                    '.jpg'),
-                              ),
-                              title: Text(
-                                radioItem.title,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: radioItem.description != ''
-                                  ? Text(
-                                      radioItem.description,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                      ),
-                                    )
-                                  : null,
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Container(
-                                    padding: EdgeInsets.all(5),
-                                    decoration: BoxDecoration(
-                                      color: index ==
-                                                  globals
-                                                      .currentAndNextItem[0] &&
-                                              (pickedDate == null ||
-                                                  pickedDate
-                                                          .difference(
-                                                              DateTime.now())
-                                                          .inDays ==
-                                                      0)
-                                          ? Colors.red
-                                          : Color.fromRGBO(0, 172, 193, 1.0),
-                                      shape: BoxShape.rectangle,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Text(
-                                      index == globals.currentAndNextItem[0] &&
-                                              (pickedDate == null ||
-                                                  pickedDate
-                                                          .difference(
-                                                              DateTime.now())
-                                                          .inDays ==
-                                                      0)
-                                          ? 'پخش زنده'
-                                          : radioItem.startHour,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+            : (selectiveRadioItemList != null &&
+                        selectiveRadioItemList.isEmpty) ||
+                    (globals.radioItemList != null &&
+                        globals.radioItemList.isEmpty)
+                ? () {
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'برنامه ای برای پخش وجود ندارد.',
+                              style: TextStyle(fontFamily: 'Sans'),
+                            ),
+                            duration: Duration(seconds: 5),
+                            behavior: SnackBarBehavior.floating,
+                            action: SnackBarAction(
+                              textColor: RadioRamezanColors.goldy,
+                              label: 'ای بابا!',
+                              onPressed: () {},
                             ),
                           ),
-                        ),
-                        SizedBox(height: 10),
-                      ],
+                        );
+                      },
                     );
-                  },
-                ),
-              ),
+                    return null;
+                  }()
+                : DraggableScrollbar.semicircle(
+                    controller: scrollController,
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                      itemCount: selectiveRadioItemList != null
+                          ? selectiveRadioItemList.length
+                          : globals.radioItemList.length,
+                      itemBuilder: (context, index) {
+                        RadioItem radioItem = selectiveRadioItemList != null
+                            ? selectiveRadioItemList[index]
+                            : globals.radioItemList[index];
+                        return Column(
+                          children: <Widget>[
+                            Card(
+                              elevation: 2,
+                              margin: EdgeInsets.zero,
+                              color: index == globals.currentAndNextItem[0] &&
+                                      (pickedDate == null ||
+                                          pickedDate
+                                                  .difference(tz.TZDateTime.now(
+                                                      globals.timeZone))
+                                                  .inDays ==
+                                              0)
+                                  ? RadioRamezanColors.goldy[100]
+                                  : Colors.white,
+                              shadowColor: Colors.black.withOpacity(.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: InkWell(
+                                onTap: () {
+                                  displayDetailsDialog(context, radioItem);
+                                },
+                                borderRadius: BorderRadius.circular(5),
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical:
+                                        radioItem.description != '' ? 2 : 10,
+                                    horizontal: 10,
+                                  ),
+                                  leading: ClipRRect(
+                                    borderRadius: BorderRadius.circular(5),
+                                    child: Image.asset('assets/images/poster_' +
+                                        radioItem.category +
+                                        '.jpg'),
+                                  ),
+                                  title: Text(
+                                    radioItem.title,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: radioItem.description != ''
+                                      ? Text(
+                                          radioItem.description,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Colors.black54,
+                                          ),
+                                        )
+                                      : null,
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Container(
+                                        padding: EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          color: index ==
+                                                      globals.currentAndNextItem[
+                                                          0] &&
+                                                  (pickedDate == null ||
+                                                      pickedDate
+                                                              .difference(tz
+                                                                      .TZDateTime
+                                                                  .now(globals
+                                                                      .timeZone))
+                                                              .inDays ==
+                                                          0)
+                                              ? Colors.red
+                                              : Color.fromRGBO(
+                                                  0, 172, 193, 1.0),
+                                          shape: BoxShape.rectangle,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                          index ==
+                                                      globals.currentAndNextItem[
+                                                          0] &&
+                                                  (pickedDate == null ||
+                                                      pickedDate
+                                                              .difference(tz
+                                                                      .TZDateTime
+                                                                  .now(globals
+                                                                      .timeZone))
+                                                              .inDays ==
+                                                          0)
+                                              ? 'پخش زنده'
+                                              : radioItem.startHour,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
       ),
     );
   }
