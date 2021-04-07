@@ -1,7 +1,10 @@
 // loading required packages
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 
 class AppSettings extends StatefulWidget {
@@ -10,8 +13,17 @@ class AppSettings extends StatefulWidget {
 }
 
 class AppSettingsState extends State<AppSettings> {
+  GlobalKey<ScaffoldState> appSettingsScaffoldKey;
+  Map<int, String> cityMap;
+
   @override
   void initState() {
+    appSettingsScaffoldKey = GlobalKey<ScaffoldState>();
+    cityMap = Map.fromIterable(
+      globals.cityList,
+      key: (city) => city.cityId,
+      value: (city) => city.countryNameFa + '، ' + city.cityNameFa,
+    );
     super.initState();
   }
 
@@ -22,8 +34,23 @@ class AppSettingsState extends State<AppSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: SettingsScreen(
+    return Scaffold(
+      key: appSettingsScaffoldKey,
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'رادیو رمضان',
+          textAlign: TextAlign.center,
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.menu),
+          onPressed: () {
+            globals.mainScaffoldKey.currentState.openDrawer();
+          },
+        ),
+        brightness: Brightness.dark,
+      ),
+      body: SettingsScreen(
         title: "",
         children: [
           SettingsGroup(
@@ -32,13 +59,22 @@ class AppSettingsState extends State<AppSettings> {
               SwitchSettingsTile(
                 settingKey: 'darkThemeEnabled',
                 title: 'تغییر پوسته',
-                subtitle: 'انتخاب وضعیت تاریک / روشن',
+                subtitle: 'انتخاب بین قالب تاریک و روشن',
                 enabledLabel: 'فعال',
                 disabledLabel: 'غیرفعال',
-                leading: Icon(Theme.of(context).brightness ==  Brightness.light ? CupertinoIcons.lightbulb : CupertinoIcons.lightbulb_slash),
+                leading: Icon(CupertinoIcons.paintbrush),
                 onChange: (value) {
                   Future.delayed(Duration(milliseconds: 250), () {
-                    toggleBrightness(context, value);
+                    SystemChrome.setSystemUIOverlayStyle(
+                      SystemUiOverlayStyle(
+                        statusBarColor: value
+                            ? Color.fromRGBO(50, 50, 50, 1)
+                            : RadioRamezanColors.ramady,
+                      ),
+                    );
+                    DynamicTheme.of(context).setBrightness(
+                      value ? Brightness.dark : Brightness.light,
+                    );
                   });
                 },
               ),
@@ -48,29 +84,54 @@ class AppSettingsState extends State<AppSettings> {
             title: 'عملکرد',
             children: <Widget>[
               RadioModalSettingsTile<int>(
-                title: 'انتخاب کشور و شهر محل سکونت',
+                title: 'انتخاب کشور و شهر',
                 settingKey: 'cityId',
-                values: <int, String>{
-                  0: 'کانادا، مونترآل',
-                  1: 'کانادا، تورنتو',
-                  2: 'کانادا، اتاوا',
-                  3: 'کانادا،‌ کبک سیتی',
-                },
-                selected: 0,
+                values: cityMap,
+                selected: 3,
                 onChange: (value) {
-                  debugPrint('$value');
+                  globals.cityChangeUpdate();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'تغییرات مربوط به شهر جدید اعمال شدند.',
+                        style: TextStyle(fontFamily: 'Sans'),
+                      ),
+                      duration: Duration(seconds: 5),
+                      behavior: SnackBarBehavior.floating,
+                      action: SnackBarAction(
+                        textColor: RadioRamezanColors.goldy,
+                        label: 'باشه!',
+                        onPressed: () {},
+                      ),
+                    ),
+                  );
                 },
               ),
               RadioModalSettingsTile<int>(
-                title: 'مکانیزم محاسبه اوقات شرعی',
-                settingKey: 'owghatMechanism',
+                title: 'مکانیزم محاسبه اوقات',
+                settingKey: 'owghatMethod',
                 values: <int, String>{
                   0: 'موسسه لواء قم',
-                  7: 'ژئوفیزیک دانشگاه تهران',
+                  7: 'موسسه ژئوفیزیک',
                 },
                 selected: 0,
                 onChange: (value) {
-                  debugPrint('$value');
+                  globals.owghatMethodChangeUpdate();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'این انتخاب صرفا بر روی نمایش اوقات شرعی اثر دارد و پخش زنده رادیو بر مبنای مکانیزم موسسه لواء تنظیم شده است.',
+                        style: TextStyle(fontFamily: 'Sans'),
+                      ),
+                      duration: Duration(seconds: 8),
+                      behavior: SnackBarBehavior.floating,
+                      action: SnackBarAction(
+                        textColor: RadioRamezanColors.goldy,
+                        label: 'باشه!',
+                        onPressed: () {},
+                      ),
+                    ),
+                  );
                 },
               ),
             ],
@@ -79,75 +140,78 @@ class AppSettingsState extends State<AppSettings> {
             title: 'زمان بندی',
             children: <Widget>[
               SwitchSettingsTile(
-                settingKey: 'autoStartupEnabled',
-                title: 'پخش خودکار',
-                subtitle: 'فعال سازی رادیو پیش از اذان',
+                settingKey: 'autoStartStopEnabled',
+                title: 'پخش و خاموشی خودکار',
+                subtitle: 'گوش دادن به رادیو پیرامون وقت اذان',
                 enabledLabel: 'فعال',
                 disabledLabel: 'غیرفعال',
                 leading: Icon(CupertinoIcons.alarm),
                 onChange: (value) {
-                  debugPrint('$value');
+                  globals.setAutoStartStopTimers();
+                  if (value)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'برای استفاده از این آپشن، اپلیکیشن نباید به طور کامل بسته شود.',
+                          style: TextStyle(fontFamily: 'Sans'),
+                        ),
+                        duration: Duration(seconds: 5),
+                        behavior: SnackBarBehavior.floating,
+                        action: SnackBarAction(
+                          textColor: RadioRamezanColors.goldy,
+                          label: 'باشه!',
+                          onPressed: () {},
+                        ),
+                      ),
+                    );
                 },
                 childrenIfEnabled: <Widget>[
                   CheckboxSettingsTile(
                     leading: Icon(CupertinoIcons.sunrise),
-                    settingKey: 'autoStartupSobhEnabled',
+                    settingKey: 'autoStartStopSobhEnabled',
                     title: 'اذان صبح',
                     onChange: (value) {
-                      debugPrint('$value');
+                      globals.setAutoStartStopTimers();
                     },
                   ),
                   CheckboxSettingsTile(
                     leading: Icon(CupertinoIcons.sun_max),
-                    settingKey: 'autoStartupZohrEnabled',
+                    settingKey: 'autoStartStopZohrEnabled',
                     title: 'اذان ظهر',
                     onChange: (value) {
-                      debugPrint('$value');
+                      globals.setAutoStartStopTimers();
                     },
                   ),
                   CheckboxSettingsTile(
                     leading: Icon(CupertinoIcons.sunset),
-                    settingKey: 'autoStartupMaghrebEnabled',
+                    settingKey: 'autoStartStopMaghrebEnabled',
                     title: 'اذان مغرب',
                     onChange: (value) {
-                      debugPrint('$value');
+                      globals.setAutoStartStopTimers();
                     },
                   ),
                   SliderSettingsTile(
-                    settingKey: 'autoStartupDuration',
-                    title: 'چند دقیقه پیش از اذان؟',
+                    settingKey: 'autoStartDuration',
+                    title: 'شروع پخش (چند دقیقه پیش از اذان؟)',
                     defaultValue: 30,
-                    min: 0,
-                    max: 60,
+                    min: 10,
+                    max: 90,
                     step: 10,
                     leading: Icon(CupertinoIcons.hourglass),
                     onChangeEnd: (value) {
-                      debugPrint('$value');
+                      globals.setAutoStartStopTimers();
                     },
                   ),
-                ],
-              ),
-              SwitchSettingsTile(
-                settingKey: 'AutoShutdownEnabled',
-                title: 'خاموشی خودکار',
-                subtitle: 'توقف پخش پس از مدت معین',
-                enabledLabel: 'فعال',
-                disabledLabel: 'غیرفعال',
-                leading: Icon(CupertinoIcons.timer),
-                onChange: (value) {
-                  debugPrint('$value');
-                },
-                childrenIfEnabled: <Widget>[
                   SliderSettingsTile(
-                    settingKey: 'autoShutdownDuration',
-                    title: 'چند دقیقه پس از اذان؟',
+                    settingKey: 'autoStopDuration',
+                    title: 'توقف پخش (چند دقیقه پس از اذان؟)',
                     defaultValue: 30,
-                    min: 0,
-                    max: 60,
+                    min: 10,
+                    max: 90,
                     step: 10,
                     leading: Icon(CupertinoIcons.hourglass),
                     onChangeEnd: (value) {
-                      debugPrint('$value');
+                      globals.setAutoStartStopTimers();
                     },
                   ),
                 ],
