@@ -19,33 +19,35 @@ dependencies:
   flutter_holo_date_picker: ^0.3.2 # do not update
   intl: ^0.17.0
   geolocator: ^6.2.1
-  google_maps_flutter: ^2.0.1
+  google_maps_flutter: ^2.0.3
   vector_math: ^2.0.8
   assets_audio_player: ^2.0.15
-  flutter_launcher_icons: ^0.8.1
   flutter_settings_screens: ^0.2.1+1 # do not update
-  url_launcher: ^6.0.2
+  url_launcher: ^6.0.3
   cupertino_icons: ^1.0.2
-  package_info: ^2.0.0
-  shamsi_date: ^0.9.1
-  hijri: ^2.0.3
+  package_info_plus: '>=0.6.3 <2.0.0'
+  shamsi_date: ^0.12.0
   carousel_slider: ^3.0.0
-  modal_bottom_sheet: ^2.0.0
   dynamic_theme: ^1.0.1 # do not update
-  # flutter_downloader: ^1.5.2
+  flutter_downloader: ^1.5.2
   share: ^2.0.1
   cron: ^0.3.0
+  mailer: ^5.0.0
+  draggable_scrollbar: ^0.1.0
+  permission_handler: ^5.1.0+2
+  timezone: ^0.7.0
+  # flutter_analog_clock: ^0.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/icons/icon-512x512.png"
-  adaptive_icon_foreground: "assets/icons/adaptive-foreground-512x512.png"
-  adaptive_icon_background: "assets/icons/adaptive-background-512x512.png"
+# flutter_icons:
+#   android: true
+#   ios: true
+#   image_path: "assets/icons/icon-512x512.png"
+#   adaptive_icon_foreground: "assets/icons/adaptive-foreground-512x512.png"
+#   adaptive_icon_background: "assets/icons/adaptive-background-512x512.png"
 
 flutter:
   uses-material-design: true
@@ -82,6 +84,11 @@ flutter:
 
   assets:
     - assets/audios/
+    - assets/fonts/
     - assets/icons/
     - assets/images/
     - assets/texts/
+
+# flutter_native_splash:
+#   color: "#822C61"
+#   image: "assets/images/logo_white_transparent_background_large.png"
