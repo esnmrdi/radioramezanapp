@@ -90,7 +90,7 @@ class ConductorState extends State<Conductor> {
                     topRight: Radius.circular(5),
                   ),
                   child: Image.asset(
-                      'assets/images/poster_' + radioItem.category + '.jpg'),
+                      'images/poster_' + radioItem.category + '.jpg'),
                 ),
                 Container(
                   padding: EdgeInsets.all(20),
@@ -242,7 +242,7 @@ class ConductorState extends State<Conductor> {
                                   ),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(5),
-                                    child: Image.asset('assets/images/poster_' +
+                                    child: Image.asset('images/poster_' +
                                         radioItem.category +
                                         '.jpg'),
                                   ),

@@ -190,7 +190,7 @@ class HomePageState extends State<HomePage>
         ),
         foregroundDecoration: BoxDecoration(
           image: DecorationImage(
-              image: AssetImage('assets/images/mosque_frame_top.png'),
+              image: AssetImage('images/mosque_frame_top.png'),
               fit: BoxFit.fitWidth,
               alignment: Alignment.topCenter),
         ),
@@ -203,7 +203,7 @@ class HomePageState extends State<HomePage>
           ),
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/images/mosque_frame_edge.png'),
+              image: AssetImage('images/mosque_frame_edge.png'),
               fit: BoxFit.fill,
               alignment: Alignment.topCenter,
             ),
@@ -216,7 +216,7 @@ class HomePageState extends State<HomePage>
                   Container(
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/images/city_frame.png'),
+                        image: AssetImage('images/city_frame.png'),
                         fit: BoxFit.fitHeight,
                         alignment: Alignment.center,
                       ),
@@ -277,7 +277,7 @@ class HomePageState extends State<HomePage>
                           child: Stack(
                             alignment: AlignmentDirectional.center,
                             children: [
-                              Image.asset('assets/images/date_frame.png'),
+                              Image.asset('images/date_frame.png'),
                               Padding(
                                 padding: EdgeInsets.only(
                                     bottom: .075 * constraints.maxHeight),
@@ -310,7 +310,7 @@ class HomePageState extends State<HomePage>
                           child: Stack(
                             alignment: AlignmentDirectional.center,
                             children: [
-                              Image.asset('assets/images/date_frame.png'),
+                              Image.asset('images/date_frame.png'),
                               Padding(
                                 padding: EdgeInsets.only(
                                     bottom: .065 * constraints.maxHeight),
@@ -345,7 +345,7 @@ class HomePageState extends State<HomePage>
                           child: Stack(
                             alignment: AlignmentDirectional.center,
                             children: [
-                              Image.asset('assets/images/date_frame.png'),
+                              Image.asset('images/date_frame.png'),
                               Padding(
                                 padding: EdgeInsets.only(
                                     bottom: .075 * constraints.maxHeight),

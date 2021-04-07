@@ -37,7 +37,7 @@ class RadioBarState extends State<RadioBar>
       decoration: BoxDecoration(
         color: Colors.white,
         image: DecorationImage(
-          image: AssetImage('assets/images/golden_mosque_50percent.png'),
+          image: AssetImage('images/golden_mosque_50percent.png'),
           fit: BoxFit.fitHeight,
           alignment: Alignment.lerp(Alignment.centerLeft, Alignment.center, .5),
         ),

@@ -180,7 +180,7 @@ class PrayersState extends State<Prayers> {
                         ),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(5),
-                          child: Image.asset('assets/images/poster_' +
+                          child: Image.asset('images/poster_' +
                               prayer.category +
                               '_prayers.jpg'),
                         ),
