@@ -45,9 +45,9 @@ dev_dependencies:
 # flutter_icons:
 #   android: true
 #   ios: true
-#   image_path: "assets/icons/icon-512x512.png"
-#   adaptive_icon_foreground: "assets/icons/adaptive-foreground-512x512.png"
-#   adaptive_icon_background: "assets/icons/adaptive-background-512x512.png"
+#   image_path: "icons/icon-512x512.png"
+#   adaptive_icon_foreground: "icons/adaptive-foreground-512x512.png"
+#   adaptive_icon_background: "icons/adaptive-background-512x512.png"
 
 flutter:
   uses-material-design: true
@@ -55,40 +55,40 @@ flutter:
   fonts:
     - family: Tahrir
       fonts:
-        - asset: assets/fonts/tahrir_book.ttf
+        - asset: fonts/tahrir_book.ttf
           weight: 300
-        - asset: assets/fonts/tahrir_regular.ttf
+        - asset: fonts/tahrir_regular.ttf
           weight: 400
-        - asset: assets/fonts/tahrir_medium.ttf
+        - asset: fonts/tahrir_medium.ttf
           weight: 500
-        - asset: assets/fonts/tahrir_bold.ttf
+        - asset: fonts/tahrir_bold.ttf
           weight: 600
-        - asset: assets/fonts/tahrir_extra_bold.ttf
+        - asset: fonts/tahrir_extra_bold.ttf
           weight: 700
-        - asset: assets/fonts/tahrir_black.ttf
+        - asset: fonts/tahrir_black.ttf
           weight: 800
     - family: Sans
       fonts:
-        - asset: assets/fonts/sans_mobile_ultraLight.ttf
+        - asset: fonts/sans_mobile_ultraLight.ttf
           weight: 200
-        - asset: assets/fonts/sans_mobile_light.ttf
+        - asset: fonts/sans_mobile_light.ttf
           weight: 300
-        - asset: assets/fonts/sans_mobile.ttf
+        - asset: fonts/sans_mobile.ttf
           weight: 400
-        - asset: assets/fonts/sans_mobile_medium.ttf
+        - asset: fonts/sans_mobile_medium.ttf
           weight: 500
-        - asset: assets/fonts/sans_mobile_bold.ttf
+        - asset: fonts/sans_mobile_bold.ttf
           weight: 600
-        - asset: assets/fonts/sans_mobile_black.ttf
+        - asset: fonts/sans_mobile_black.ttf
           weight: 700
 
   assets:
-    - assets/audios/
-    - assets/fonts/
-    - assets/icons/
-    - assets/images/
-    - assets/texts/
+    - audios/
+    - fonts/
+    - icons/
+    - images/
+    - texts/
 
 # flutter_native_splash:
 #   color: "#822C61"
-#   image: "assets/images/logo_white_transparent_background_large.png"
+#   image: "images/logo_white_transparent_background_large.png"
