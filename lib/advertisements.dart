@@ -8,11 +8,11 @@ class Advertisements extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: kIsWeb
+      height: kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
           ? (MediaQuery.of(context).size.height / globals.webAspectRatio) /
               globals.adAspectRatio
           : MediaQuery.of(context).size.width / globals.adAspectRatio,
-      width: kIsWeb
+      width: kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
           ? (MediaQuery.of(context).size.height / globals.webAspectRatio)
           : MediaQuery.of(context).size.width,
       margin: EdgeInsets.zero,
