@@ -68,7 +68,6 @@ class RadioRamezanApp extends StatelessWidget {
             Locale('fa', 'IR'),
           ],
           locale: Locale('fa', 'IR'),
-          debugShowCheckedModeBanner: false,
         );
       },
     );
@@ -110,6 +109,16 @@ class MainState extends State<Main> {
                               globals.webAspectRatio) /
                       2)
               : null,
+          // decoration: BoxDecoration(
+          //   boxShadow: [
+          //     BoxShadow(
+          //       color: Colors.grey.withOpacity(0.5),
+          //       spreadRadius: 5,
+          //       blurRadius: 10,
+          //       offset: Offset(0, 0),
+          //     ),
+          //   ],
+          // ),
           child: ClipRRect(
             child: Scaffold(
               key: globals.mainScaffoldKey,
