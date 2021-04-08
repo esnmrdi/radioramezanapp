@@ -196,7 +196,7 @@ class HomePageState extends State<HomePage>
         ),
         child: Container(
           padding: EdgeInsets.only(
-            top: .25 *
+            top: .225 *
                 (kIsWeb
                     ? MediaQuery.of(context).size.height / globals.webAspectRatio
                     : MediaQuery.of(context).size.width),
