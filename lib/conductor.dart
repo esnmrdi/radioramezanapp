@@ -58,7 +58,7 @@ class ConductorState extends State<Conductor> {
       titleText: 'انتخاب تاریخ',
       confirmText: 'تایید',
       cancelText: 'انصراف',
-      textColor: Theme.of(context).primaryColor,
+      textColor: Theme.of(context).accentColor,
     );
 
     if (date != null && date != pickedDate) {

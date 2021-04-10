@@ -196,10 +196,11 @@ class HomePageState extends State<HomePage>
         ),
         child: Container(
           padding: EdgeInsets.only(
-            top: .225 *
-                (kIsWeb
-                    ? MediaQuery.of(context).size.height / globals.webAspectRatio
-                    : MediaQuery.of(context).size.width),
+            // top: .225 *
+            //     (kIsWeb
+            //         ? MediaQuery.of(context).size.height / globals.webAspectRatio
+            //         : MediaQuery.of(context).size.width),
+            top: 110,
           ),
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -433,7 +434,7 @@ class HomePageState extends State<HomePage>
                                     //       minuteHandColor: Colors.black,
                                     //       secondHandColor: Colors.red,
                                     //       numberColor:
-                                    //           Theme.of(context).primaryColor,
+                                    //           Theme.of(context).accentColor,
                                     //       borderColor:
                                     //           Theme.of(context).primaryColor,
                                     //       tickColor: Colors.black,
