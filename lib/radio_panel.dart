@@ -11,6 +11,7 @@ import 'package:share/share.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cron/cron.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 import 'package:radioramezan/data_models/radio_item_model.dart';
@@ -323,6 +324,9 @@ class RadioPanelState extends State<RadioPanel>
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Settings.getValue<bool>("darkThemeEnabled", false)
+          ? Color.fromRGBO(50, 50, 50, 1)
+          : RadioRamezanColors.ramady,
       margin:
           kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
               ? EdgeInsets.symmetric(
@@ -347,7 +351,7 @@ class RadioPanelState extends State<RadioPanel>
               child: FloatingActionButton(
                 elevation: 2,
                 backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.arrow_left),
+                child: Icon(CupertinoIcons.chevron_down),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -431,8 +435,8 @@ class RadioPanelState extends State<RadioPanel>
                                 width: 90,
                                 decoration: BoxDecoration(
                                   color: index == 0
-                                      ? Colors.red.withOpacity(.5)
-                                      : Colors.lightGreen.withOpacity(.5),
+                                      ? Colors.red
+                                      : Colors.lightGreen,
                                   shape: BoxShape.rectangle,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
