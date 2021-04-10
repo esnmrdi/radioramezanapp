@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
+import 'package:radioramezan/theme.dart';
 
 class AboutUs extends StatefulWidget {
   @override
@@ -35,6 +37,9 @@ class AboutUsState extends State<AboutUs> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Settings.getValue<bool>("darkThemeEnabled", false)
+          ? Color.fromRGBO(50, 50, 50, 1)
+          : RadioRamezanColors.ramady,
       margin:
           kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
               ? EdgeInsets.symmetric(
@@ -59,7 +64,7 @@ class AboutUsState extends State<AboutUs> {
               child: FloatingActionButton(
                 elevation: 2,
                 backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.arrow_left),
+                child: Icon(CupertinoIcons.chevron_down),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -100,7 +105,7 @@ class AboutUsState extends State<AboutUs> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                            color: Theme.of(context).accentColor,
                           ),
                         ),
                       ),

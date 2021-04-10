@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 
@@ -140,6 +141,9 @@ class ContactUsState extends State<ContactUs> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Settings.getValue<bool>("darkThemeEnabled", false)
+          ? Color.fromRGBO(50, 50, 50, 1)
+          : RadioRamezanColors.ramady,
       margin:
           kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
               ? EdgeInsets.symmetric(
@@ -164,7 +168,7 @@ class ContactUsState extends State<ContactUs> {
               child: FloatingActionButton(
                 elevation: 2,
                 backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.arrow_left),
+                child: Icon(CupertinoIcons.chevron_down),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -205,7 +209,7 @@ class ContactUsState extends State<ContactUs> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                            color: Theme.of(context).accentColor,
                           ),
                         ),
                       ),

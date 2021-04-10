@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 import 'data_models/owghat_model.dart';
@@ -33,6 +34,9 @@ class MonthlyOwghatState extends State<MonthlyOwghat> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Settings.getValue<bool>("darkThemeEnabled", false)
+          ? Color.fromRGBO(50, 50, 50, 1)
+          : RadioRamezanColors.ramady,
       margin:
           kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
               ? EdgeInsets.symmetric(
@@ -57,7 +61,7 @@ class MonthlyOwghatState extends State<MonthlyOwghat> {
               child: FloatingActionButton(
                 elevation: 2,
                 backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.arrow_left),
+                child: Icon(CupertinoIcons.chevron_down),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -95,7 +99,7 @@ class MonthlyOwghatState extends State<MonthlyOwghat> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).accentColor,
                     ),
                   ),
                 ),
