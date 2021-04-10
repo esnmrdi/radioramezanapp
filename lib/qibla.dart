@@ -8,7 +8,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:vector_math/vector_math.dart' as vmath;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 
