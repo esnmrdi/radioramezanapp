@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -15,7 +15,7 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="A streaming radio service during Ramadan for Iranians living abroad">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,13 +25,73 @@
   <link rel="stylesheet" type="text/css" href="styles.css">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>رادیو رمضان</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <img src="splash.png" class="center splash-img" />
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBYyiUJS-kigrK1fePgi4yOfPIZT9QDIeg"></script>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.1.3/dist/howler.min.js"></script>
+  <script type="application/javascript">
+    var liveStream, azanNotification, prayer;
+    function loadRadio(path) {
+      liveStream = new Howl({
+        src: [path],
+        autoplay: false,
+        html5: true,
+      });
+    }
+    function playRadio() {
+      liveStream.play();
+    }
+    function stopRadio() {
+      liveStream.stop();
+    }
+    function setRadioVolume(vol) {
+      liveStream.volume(vol);
+    }
+    function loadAzanNotification(path) {
+      azanNotification = new Howl({
+        src: [path],
+        autoplay: false,
+        html5: true,
+      });
+    }
+    function playAzanNotification() {
+      azanNotification.play();
+    }
+    function loadPrayer(path) {
+      prayer = new Howl({
+        src: [path],
+        autoplay: false,
+        html5: true,
+      });
+    }
+    function playPrayer() {
+      prayer.play();
+    }
+    function stopPrayer() {
+      prayer.stop();
+    }
+    function pausePrayer() {
+      prayer.pause();
+    }
+    function setPrayerVolume(vol) {
+      prayer.volume(vol);
+    }
+    function seekPrayer(duration) {
+      prayer.seek(prayer.seek() + duration);
+    }
+    function prayerPos() {
+      return prayer.seek();
+    }
+    function prayerDuration() {
+      return prayer.duration();
+    }
+  </script>
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
@@ -44,4 +104,5 @@
   </script>
   <script src="main.dart.js" type="application/javascript"></script>
 </body>
+
 </html>
