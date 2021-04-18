@@ -17,21 +17,6 @@ class RadioRamezanColors {
       900: Color(0xFF441E13),
     },
   );
-  static const MaterialColor redy = MaterialColor(
-    0xFFD01111,
-    <int, Color>{
-      50: Color(0xFFF9E2E2),
-      100: Color(0xFFF1B8B8),
-      200: Color(0xFFE88888),
-      300: Color(0xFFDE5858),
-      400: Color(0xFFD73535),
-      500: Color(0xFFD01111),
-      600: Color(0xFFCB0F0F),
-      700: Color(0xFFC40C0C),
-      800: Color(0xFFBE0A0A),
-      900: Color(0xFFB30505),
-    },
-  );
   static const MaterialColor goldy = MaterialColor(
     0xFFFFC107,
     <int, Color>{
@@ -47,19 +32,26 @@ class RadioRamezanColors {
       900: Color(0xFFFF9E02),
     },
   );
+  static const MaterialColor darky = MaterialColor(
+    0xFF323232,
+    <int, Color>{
+      500: Color(0xFF323232),
+    }
+  );
 }
 
 final lightTheme = ThemeData(
   primaryColor: RadioRamezanColors.ramady,
   accentColor: RadioRamezanColors.ramady,
+  scaffoldBackgroundColor: RadioRamezanColors.ramady.withOpacity(.1),
   fontFamily: 'Sans',
   brightness: Brightness.light,
 );
 
 final darkTheme = ThemeData(
-  primaryColor: Color.fromRGBO(50, 50, 50, 1),
-  accentColor: Color.fromRGBO(50, 50, 50, 1),
+  primaryColor: RadioRamezanColors.darky,
+  accentColor: RadioRamezanColors.darky,
+  scaffoldBackgroundColor: RadioRamezanColors.darky.withOpacity(.1),
   fontFamily: 'Sans',
-  // brightness: Brightness.dark,
   brightness: Brightness.light,
 );
