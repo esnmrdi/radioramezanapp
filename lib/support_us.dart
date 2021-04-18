@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 import 'package:radioramezan/globals.dart';
-import 'package:radioramezan/theme.dart';
 
 class SupportUs extends StatefulWidget {
   @override
@@ -14,7 +14,7 @@ class SupportUs extends StatefulWidget {
 }
 
 class SupportUsState extends State<SupportUs> {
-  GlobalKey<ScaffoldState> supportUsScaffoldState;
+  GlobalKey<ScaffoldState> supportUsScaffoldKey;
   ScrollController scrollController;
   String paypalURL;
   String paypingURL;
@@ -25,7 +25,7 @@ class SupportUsState extends State<SupportUs> {
 
   @override
   void initState() {
-    supportUsScaffoldState = GlobalKey<ScaffoldState>();
+    supportUsScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
     paypalURL = 'https://www.paypal.com/paypalme2/RadioRamezan';
     paypingURL = 'https://www.payping.ir/@radioramezan';
@@ -41,53 +41,23 @@ class SupportUsState extends State<SupportUs> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Settings.getValue<bool>("darkThemeEnabled", false)
-          ? Color.fromRGBO(50, 50, 50, 1)
-          : RadioRamezanColors.ramady,
-      margin:
-          kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
-              ? EdgeInsets.symmetric(
-                  horizontal: (MediaQuery.of(context).size.width -
-                          MediaQuery.of(context).size.height /
-                              globals.webAspectRatio) /
-                      2)
-              : null,
+      margin: kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+          ? EdgeInsets.symmetric(
+              horizontal:
+                  (MediaQuery.of(context).size.width - MediaQuery.of(context).size.height / globals.webAspectRatio) / 2)
+          : null,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: ClipRRect(
         child: Scaffold(
-          key: supportUsScaffoldState,
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: kIsWeb
-                    ? globals.webTopPaddingFAB
-                    : MediaQuery.of(context).padding.top,
-              ),
-              child: FloatingActionButton(
-                elevation: 2,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.chevron_down),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ),
+          key: supportUsScaffoldKey,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               image: DecorationImage(
                 image: AssetImage('images/golden_mosque_20percent.png'),
                 fit: BoxFit.fitWidth,
                 alignment: Alignment.bottomCenter,
-              ),
-            ),
-            foregroundDecoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/modal_top.png'),
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter,
               ),
             ),
             child: FutureBuilder(
@@ -95,25 +65,54 @@ class SupportUsState extends State<SupportUs> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return Column(
-                    children: <Widget>[
-                      SizedBox(
-                        height: .25 *
-                            (kIsWeb
-                                ? MediaQuery.of(context).size.height /
-                                    globals.webAspectRatio
-                                : MediaQuery.of(context).size.width),
-                      ),
-                      Container(
-                        child: Text(
-                          'حمایت مالی',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).accentColor,
+                    children: [
+                      Stack(
+                        alignment: Alignment.topCenter,
+                        children: [
+                          WaveWidget(
+                            config: CustomConfig(
+                              colors: [Colors.white70, Colors.white54, Colors.white30, Colors.white],
+                              durations: [32000, 16000, 8000, 4000],
+                              heightPercentages: [.65, .68, .75, .8],
+                            ),
+                            waveAmplitude: 0,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            size: Size(
+                              MediaQuery.of(context).size.width,
+                              100,
+                            ),
                           ),
-                        ),
+                          Container(
+                            height: 100,
+                            margin: EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'حمایت مالی',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                FloatingActionButton(
+                                  elevation: 2,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    CupertinoIcons.xmark,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 20),
                       Expanded(
                         flex: 1,
                         child: DraggableScrollbar.semicircle(
@@ -124,28 +123,25 @@ class SupportUsState extends State<SupportUs> {
                             itemCount: 1,
                             itemBuilder: (context, index) {
                               return Column(
-                                children: <Widget>[
+                                children: [
                                   Text(snapshot.data),
                                   SizedBox(height: 20),
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         flex: 1,
                                         child: MaterialButton(
                                           elevation: 2,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
+                                            borderRadius: BorderRadius.circular(5),
                                           ),
                                           color: Colors.white,
                                           onPressed: () {
                                             globals.launchURL(paypalURL);
                                           },
                                           child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 5, vertical: 10),
+                                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                                             child: Image.asset(
                                               'images/paypal.png',
                                             ),
@@ -158,18 +154,15 @@ class SupportUsState extends State<SupportUs> {
                                         child: MaterialButton(
                                           elevation: 2,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5),
+                                            borderRadius: BorderRadius.circular(5),
                                           ),
                                           color: Colors.white,
                                           onPressed: () {
                                             globals.launchURL(paypingURL);
                                           },
                                           child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 5, vertical: 10),
-                                            child: Image.asset(
-                                                'images/payping.png'),
+                                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                                            child: Image.asset('images/payping.png'),
                                           ),
                                         ),
                                       ),
