@@ -6,8 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:http/http.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:radioramezan/theme.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/data_models/radio_item_model.dart';
@@ -21,25 +19,25 @@ class Conductor extends StatefulWidget {
 class ConductorState extends State<Conductor> {
   GlobalKey<ScaffoldState> conductorScaffoldKey;
   ScrollController scrollController;
-  List<RadioItem> selectiveRadioItemList;
   DateTime pickedDate;
+  Map<int, String> gregorianMonthNames;
   bool isFetching;
 
   Future<Null> fetchRadioItemList(City city, DateTime date) async {
     isFetching = true;
     final response = await get(
+      Uri.parse(
         'https://m.radioramezan.com/api/radio-conductor.php?city=' +
             city.cityId.toString() +
             '&date=' +
-            intl.DateFormat('yyyy-MM-dd').format(date));
+            intl.DateFormat('yyyy-MM-dd').format(date),
+      ),
+    );
 
     if (response.statusCode == 200) {
       isFetching = false;
       setState(() {
-        if (selectiveRadioItemList != null) selectiveRadioItemList.clear();
-        selectiveRadioItemList = (json.decode(response.body) as List)
-            .map((i) => RadioItem.fromJson(i))
-            .toList();
+        globals.radioItemList = (json.decode(response.body) as List).map((i) => RadioItem.fromJson(i)).toList();
       });
     } else {
       throw Exception('Failed to fetch the conductor!');
@@ -51,16 +49,15 @@ class ConductorState extends State<Conductor> {
       context,
       initialDate: pickedDate,
       firstDate: DateTime(2021),
-      lastDate: tz.TZDateTime.now(globals.timeZone),
+      lastDate: DateTime.now(),
       dateFormat: "dd-MMMM-yyyy",
       locale: DateTimePickerLocale.en_us,
       looping: false,
       titleText: 'انتخاب تاریخ',
       confirmText: 'تایید',
-      cancelText: 'انصراف',
+      cancelText: 'لغو',
       textColor: Theme.of(context).accentColor,
     );
-
     if (date != null && date != pickedDate) {
       setState(() {
         pickedDate = date;
@@ -69,8 +66,7 @@ class ConductorState extends State<Conductor> {
     }
   }
 
-  Future<void> displayDetailsDialog(
-      BuildContext context, RadioItem radioItem) async {
+  Future<void> displayDetailsDialog(BuildContext context, RadioItem radioItem) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -83,19 +79,18 @@ class ConductorState extends State<Conductor> {
             width: .75 * MediaQuery.of(context).size.height / globals.webAspectRatio,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
+              children: [
                 ClipRRect(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(5),
                     topRight: Radius.circular(5),
                   ),
-                  child: Image.asset(
-                      'images/poster_' + radioItem.category + '.jpg'),
+                  child: Image.asset('images/poster_' + radioItem.category + '.jpg'),
                 ),
                 Container(
                   padding: EdgeInsets.all(20),
                   child: Column(
-                    children: <Widget>[
+                    children: [
                       Text(
                         radioItem.title,
                         textAlign: TextAlign.center,
@@ -126,6 +121,21 @@ class ConductorState extends State<Conductor> {
   void initState() {
     conductorScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
+    pickedDate = DateTime.now();
+    gregorianMonthNames = {
+      1: 'ژانویه',
+      2: 'فوریه',
+      3: 'مارچ',
+      4: 'آوریل',
+      5: 'می',
+      6: 'ژوئن',
+      7: 'ژوئیه',
+      8: 'آگوست',
+      9: 'سپتامبر',
+      10: 'اکتبر',
+      11: 'نوامبر',
+      12: 'دسامبر',
+    };
     isFetching = false;
     super.initState();
   }
@@ -140,6 +150,7 @@ class ConductorState extends State<Conductor> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: conductorScaffoldKey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         centerTitle: true,
         title: Text(
@@ -152,7 +163,7 @@ class ConductorState extends State<Conductor> {
             globals.mainScaffoldKey.currentState.openDrawer();
           },
         ),
-        actions: <Widget>[
+        actions: [
           IconButton(
             icon: Icon(
               CupertinoIcons.calendar,
@@ -166,63 +177,29 @@ class ConductorState extends State<Conductor> {
         brightness: Brightness.dark,
       ),
       body: Container(
-        color: Settings.getValue<bool>("darkThemeEnabled", false)
-            ? Color.fromRGBO(50, 50, 50, .5)
-            : Theme.of(context).primaryColor.withOpacity(.1),
         child: isFetching
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : (selectiveRadioItemList != null &&
-                        selectiveRadioItemList.isEmpty) ||
-                    (globals.radioItemList != null &&
-                        globals.radioItemList.isEmpty)
-                ? () {
-                    WidgetsBinding.instance.addPostFrameCallback(
-                      (_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'برنامه ای برای پخش وجود ندارد.',
-                              style: TextStyle(fontFamily: 'Sans'),
-                            ),
-                            duration: Duration(seconds: 5),
-                            behavior: SnackBarBehavior.floating,
-                            action: SnackBarAction(
-                              textColor: RadioRamezanColors.goldy,
-                              label: 'ای بابا!',
-                              onPressed: () {},
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                    return null;
-                  }()
+            : globals.radioItemList.isEmpty
+                ? Center(
+                    child: Text('برنامه پخش رادیو خالی است.'),
+                  )
                 : DraggableScrollbar.semicircle(
                     controller: scrollController,
                     child: ListView.builder(
                       controller: scrollController,
                       padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                      itemCount: selectiveRadioItemList != null
-                          ? selectiveRadioItemList.length
-                          : globals.radioItemList.length,
+                      itemCount: globals.radioItemList.length,
                       itemBuilder: (context, index) {
-                        RadioItem radioItem = selectiveRadioItemList != null
-                            ? selectiveRadioItemList[index]
-                            : globals.radioItemList[index];
+                        RadioItem radioItem = globals.radioItemList[index];
                         return Column(
-                          children: <Widget>[
+                          children: [
                             Card(
                               elevation: 2,
                               margin: EdgeInsets.zero,
-                              color: index == globals.currentAndNextItem[0] &&
-                                      (pickedDate == null ||
-                                          pickedDate
-                                                  .difference(tz.TZDateTime.now(
-                                                      globals.timeZone))
-                                                  .inDays ==
-                                              0)
+                              color: globals.radioItemList[index] == globals.currentAndNextItem[0] &&
+                                      (pickedDate == null || pickedDate.difference(DateTime.now()).inDays == 0)
                                   ? RadioRamezanColors.goldy[100]
                                   : Colors.white,
                               shadowColor: Colors.black.withOpacity(.5),
@@ -236,15 +213,12 @@ class ConductorState extends State<Conductor> {
                                 borderRadius: BorderRadius.circular(5),
                                 child: ListTile(
                                   contentPadding: EdgeInsets.symmetric(
-                                    vertical:
-                                        radioItem.description != '' ? 2 : 10,
+                                    vertical: radioItem.description != '' ? 2 : 10,
                                     horizontal: 10,
                                   ),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(5),
-                                    child: Image.asset('images/poster_' +
-                                        radioItem.category +
-                                        '.jpg'),
+                                    child: Image.asset('images/poster_' + radioItem.category + '.jpg'),
                                   ),
                                   title: Text(
                                     radioItem.title,
@@ -261,40 +235,22 @@ class ConductorState extends State<Conductor> {
                                       : null,
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
+                                    children: [
                                       Container(
                                         padding: EdgeInsets.all(5),
                                         decoration: BoxDecoration(
-                                          color: index ==
-                                                      globals.currentAndNextItem[
-                                                          0] &&
+                                          color: globals.radioItemList[index] == globals.currentAndNextItem[0] &&
                                                   (pickedDate == null ||
-                                                      pickedDate
-                                                              .difference(tz
-                                                                      .TZDateTime
-                                                                  .now(globals
-                                                                      .timeZone))
-                                                              .inDays ==
-                                                          0)
+                                                      pickedDate.difference(DateTime.now()).inDays == 0)
                                               ? Colors.red
-                                              : Color.fromRGBO(
-                                                  0, 172, 193, 1.0),
+                                              : Color.fromRGBO(0, 172, 193, 1.0),
                                           shape: BoxShape.rectangle,
-                                          borderRadius:
-                                              BorderRadius.circular(5),
+                                          borderRadius: BorderRadius.circular(5),
                                         ),
                                         child: Text(
-                                          index ==
-                                                      globals.currentAndNextItem[
-                                                          0] &&
+                                          globals.radioItemList[index] == globals.currentAndNextItem[0] &&
                                                   (pickedDate == null ||
-                                                      pickedDate
-                                                              .difference(tz
-                                                                      .TZDateTime
-                                                                  .now(globals
-                                                                      .timeZone))
-                                                              .inDays ==
-                                                          0)
+                                                      pickedDate.difference(DateTime.now()).inDays == 0)
                                               ? 'پخش زنده'
                                               : radioItem.startHour,
                                           style: TextStyle(
