@@ -1,4 +1,7 @@
 // loading required packages
+import 'dart:ui';
+import 'dart:isolate';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,11 +10,13 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cron/cron.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 import 'package:radioramezan/data_models/radio_item_model.dart';
@@ -21,8 +26,7 @@ class RadioPanel extends StatefulWidget {
   RadioPanelState createState() => RadioPanelState();
 }
 
-class RadioPanelState extends State<RadioPanel>
-    with SingleTickerProviderStateMixin {
+class RadioPanelState extends State<RadioPanel> with SingleTickerProviderStateMixin {
   GlobalKey<ScaffoldState> radioPanelScaffoldKey;
   GlobalKey<FormState> commentFormKey;
   Cron liveRadioCron = Cron();
@@ -31,26 +35,9 @@ class RadioPanelState extends State<RadioPanel>
   String commentText;
   Metas metas;
   bool radioItemIsLiked;
+  ReceivePort port;
 
   Future<Null> sendMail() async {
-    if (kIsWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'امکان ارسال ایمیل در نسخه وب وجود ندارد.',
-            style: TextStyle(fontFamily: 'Sans'),
-          ),
-          duration: Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            textColor: RadioRamezanColors.goldy,
-            label: 'ای بابا!',
-            onPressed: () {},
-          ),
-        ),
-      );
-      return null;
-    }
     SystemChannels.textInput.invokeMethod('TextInput.hide');
     if (commentFormKey.currentState.validate()) {
       setState(() {
@@ -70,10 +57,9 @@ class RadioPanelState extends State<RadioPanel>
         ..subject = 'نظر کاربران در مورد آیتم ها'
         ..text = senderController.text +
             '\n' +
-            globals.radioItemList[globals.currentAndNextItem[0]].mediaId
-                .toString() +
+            globals.currentAndNextItem[0].mediaId.toString() +
             '\n' +
-            globals.radioItemList[globals.currentAndNextItem[0]].title +
+            globals.currentAndNextItem[0].title +
             '\n' +
             commentController.text;
 
@@ -129,21 +115,18 @@ class RadioPanelState extends State<RadioPanel>
     }
   }
 
-  Future<void> displayCommentDialog(
-      BuildContext context, RadioItem radioItem) async {
+  Future<void> displayCommentDialog(BuildContext context, RadioItem radioItem) async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           content: Container(
-            width: .75 *
-                MediaQuery.of(context).size.height /
-                globals.webAspectRatio,
+            width: .75 * MediaQuery.of(context).size.height / globals.webAspectRatio,
             child: SingleChildScrollView(
               child: Form(
                 key: commentFormKey,
                 child: Column(
-                  children: <Widget>[
+                  children: [
                     TextFormField(
                       controller: senderController,
                       decoration: InputDecoration(
@@ -175,11 +158,9 @@ class RadioPanelState extends State<RadioPanel>
                       textInputAction: TextInputAction.next,
                       validator: (value) {
                         if (value.isEmpty) return 'فیلد ایمیل خالی است!';
-                        Pattern pattern =
-                            '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}';
+                        Pattern pattern = '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}';
                         RegExp regex = RegExp(pattern);
-                        if (!regex.hasMatch(value))
-                          return 'ایمیل را در قالب صحیح وارد کنید!';
+                        if (!regex.hasMatch(value)) return 'ایمیل را در قالب صحیح وارد کنید!';
                         return null;
                       },
                     ),
@@ -211,15 +192,31 @@ class RadioPanelState extends State<RadioPanel>
                       width: MediaQuery.of(context).size.width,
                       child: RawMaterialButton(
                         elevation: commentIsSending ? 0 : 2,
-                        fillColor: commentIsSending
-                            ? Theme.of(context).disabledColor
-                            : Theme.of(context).primaryColor,
+                        fillColor: commentIsSending ? Theme.of(context).disabledColor : Theme.of(context).primaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
                         onPressed: !commentIsSending
                             ? () {
-                                sendMail();
+                                if (kIsWeb) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'امکان ثبت نظر در نسخه وب وجود ندارد.',
+                                        style: TextStyle(fontFamily: 'Sans'),
+                                      ),
+                                      duration: Duration(seconds: 5),
+                                      behavior: SnackBarBehavior.floating,
+                                      action: SnackBarAction(
+                                        textColor: RadioRamezanColors.goldy,
+                                        label: 'ای بابا!',
+                                        onPressed: () {},
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  sendMail();
+                                }
                               }
                             : null,
                         child: Container(
@@ -256,34 +253,56 @@ class RadioPanelState extends State<RadioPanel>
     );
   }
 
+  static void downloadCallback(String id, DownloadTaskStatus status, int progress) {
+    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    send.send([id, status, progress]);
+  }
+
+  void downloadListener() {
+    IsolateNameServer.registerPortWithName(port.sendPort, 'downloader_send_port');
+    port.listen((dynamic data) {
+      // String id = data[0];
+      DownloadTaskStatus status = data[1];
+      if (status.toString() == "DownloadTaskStatus(3)") {
+        // FlutterDownloader.open(taskId: id);
+      }
+    });
+    FlutterDownloader.registerCallback(downloadCallback);
+  }
+
   Future<Null> download(String url) async {
-    await Permission.storage.request();
-    if (!await Permission.storage.status.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'دسترسی به حافظه وجود ندارد.',
-            style: TextStyle(fontFamily: 'Sans'),
-          ),
-          duration: Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            textColor: RadioRamezanColors.goldy,
-            label: 'اجازه بده!',
-            onPressed: () async {
-              await download(url);
-            },
-          ),
-        ),
-      );
+    if (kIsWeb) {
+      globals.launchURL(url);
     } else {
-      FlutterDownloader.enqueue(
-        url: url,
-        savedDir: '/sdcard/download/',
-        showNotification: true,
-        openFileFromNotification: true,
-        requiresStorageNotLow: true,
-      );
+      PermissionStatus status = await Permission.storage.request();
+      if (status != PermissionStatus.granted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'دسترسی به حافظه وجود ندارد.',
+              style: TextStyle(fontFamily: 'Sans'),
+            ),
+            duration: Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              textColor: RadioRamezanColors.goldy,
+              label: 'اجازه بده!',
+              onPressed: () async {
+                await Permission.storage.request();
+              },
+            ),
+          ),
+        );
+      } else {
+        Directory appDocDir = await getApplicationDocumentsDirectory();
+        await FlutterDownloader.enqueue(
+          url: url,
+          savedDir: appDocDir.path,
+          showNotification: true,
+          openFileFromNotification: true,
+          requiresStorageNotLow: true,
+        );
+      }
     }
   }
 
@@ -301,15 +320,15 @@ class RadioPanelState extends State<RadioPanel>
       curve: Curves.linear,
       parent: globals.playPauseAnimationController,
     );
-    if (!globals.radioPlayerIsPaused)
-      globals.playPauseAnimationController.forward();
+    if (!globals.radioPlayerIsPaused) globals.playPauseAnimationController.forward();
     commentFormKey = GlobalKey<FormState>();
     senderController = TextEditingController();
     emailController = TextEditingController();
     commentController = TextEditingController();
     commentIsSending = false;
-    radioItemIsLiked =
-        globals.radioItemList[globals.currentAndNextItem[0]].isLiked;
+    radioItemIsLiked = globals.currentAndNextItem[0].isLiked;
+    port = ReceivePort();
+    if (!kIsWeb) downloadListener();
     super.initState();
   }
 
@@ -324,43 +343,19 @@ class RadioPanelState extends State<RadioPanel>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Settings.getValue<bool>("darkThemeEnabled", false)
-          ? Color.fromRGBO(50, 50, 50, 1)
-          : RadioRamezanColors.ramady,
-      margin:
-          kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
-              ? EdgeInsets.symmetric(
-                  horizontal: (MediaQuery.of(context).size.width -
-                          MediaQuery.of(context).size.height /
-                              globals.webAspectRatio) /
-                      2)
-              : null,
+      margin: kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+          ? EdgeInsets.symmetric(
+              horizontal:
+                  (MediaQuery.of(context).size.width - MediaQuery.of(context).size.height / globals.webAspectRatio) / 2)
+          : null,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: ClipRRect(
         child: Scaffold(
           key: radioPanelScaffoldKey,
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: kIsWeb
-                    ? globals.webTopPaddingFAB
-                    : MediaQuery.of(context).padding.top,
-              ),
-              child: FloatingActionButton(
-                elevation: 2,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.chevron_down),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ),
-          resizeToAvoidBottomInset: false,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               image: DecorationImage(
                 image: AssetImage('images/golden_mosque_20percent.png'),
                 fit: BoxFit.fitWidth,
@@ -369,17 +364,13 @@ class RadioPanelState extends State<RadioPanel>
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
+              children: [
                 Stack(
                   alignment: AlignmentDirectional.bottomCenter,
-                  children: <Widget>[
-                    Image.asset('images/poster_' +
-                        globals.radioItemList[globals.currentAndNextItem[0]]
-                            .category +
-                        '.jpg'),
+                  children: [
+                    Image.asset('images/poster_' + globals.currentAndNextItem[0].category + '.jpg'),
                     Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       height: 50,
                       width: MediaQuery.of(context).size.width,
                       color: Colors.black54,
@@ -399,30 +390,19 @@ class RadioPanelState extends State<RadioPanel>
                         itemBuilder: (BuildContext context, int index, _) {
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: <Widget>[
+                            children: [
                               Expanded(
                                 flex: 1,
                                 child: Container(
                                   child: Text(
-                                    globals
-                                                .radioItemList[globals
-                                                    .currentAndNextItem[index]]
-                                                .description !=
-                                            ''
-                                        ? globals
-                                                .radioItemList[globals
-                                                    .currentAndNextItem[index]]
-                                                .title +
-                                            ' (' +
-                                            globals
-                                                .radioItemList[globals
-                                                    .currentAndNextItem[index]]
-                                                .description +
-                                            ')'
-                                        : globals
-                                            .radioItemList[globals
-                                                .currentAndNextItem[index]]
-                                            .title,
+                                    globals.radioItemListToday.isNotEmpty
+                                        ? globals.currentAndNextItem[index].description != ''
+                                            ? globals.currentAndNextItem[index].title +
+                                                ' (' +
+                                                globals.currentAndNextItem[index].description +
+                                                ')'
+                                            : globals.currentAndNextItem[index].title
+                                        : 'آیتمی برای پخش وجود ندارد.',
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: Colors.white,
@@ -434,15 +414,21 @@ class RadioPanelState extends State<RadioPanel>
                                 padding: EdgeInsets.all(5),
                                 width: 90,
                                 decoration: BoxDecoration(
-                                  color: index == 0
-                                      ? Colors.red
-                                      : Colors.lightGreen,
+                                  color: globals.radioItemListToday.isNotEmpty
+                                      ? index == 0
+                                          ? Colors.red
+                                          : Colors.lightGreen
+                                      : Colors.lightBlue,
                                   shape: BoxShape.rectangle,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Center(
                                   child: Text(
-                                    index == 0 ? 'پخش زنده' : 'برنامه بعد',
+                                    globals.radioItemListToday.isNotEmpty
+                                        ? index == 0
+                                            ? 'پخش زنده'
+                                            : 'برنامه بعد'
+                                        : 'عدم پخش',
                                     style: TextStyle(
                                       color: Colors.white,
                                     ),
@@ -456,180 +442,213 @@ class RadioPanelState extends State<RadioPanel>
                     ),
                   ],
                 ),
-                Container(
-                  color: Theme.of(context).primaryColor,
-                  padding: EdgeInsets.all(10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      RawMaterialButton(
-                        elevation: 0,
-                        child: Icon(
-                          radioItemIsLiked
-                              ? CupertinoIcons.suit_heart_fill
-                              : CupertinoIcons.suit_heart,
-                          size: 32.0,
-                          color: radioItemIsLiked ? Colors.red : Colors.white,
-                        ),
-                        padding: EdgeInsets.all(16.0),
-                        shape: CircleBorder(),
-                        onPressed: () {
-                          setState(() {
-                            radioItemIsLiked = !radioItemIsLiked;
-                            globals.radioItemList[globals.currentAndNextItem[0]]
-                                .isLiked = radioItemIsLiked;
-                          });
-                        },
+                Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    WaveWidget(
+                      config: CustomConfig(
+                        colors: [Colors.white70, Colors.white54, Colors.white30, Colors.white],
+                        durations: [32000, 16000, 8000, 4000],
+                        heightPercentages: [.65, .68, .75, .8],
                       ),
-                      RawMaterialButton(
-                        elevation: 0,
-                        child: Icon(
-                          CupertinoIcons.arrow_down_to_line_alt,
-                          size: 32.0,
-                          color: Colors.white,
-                        ),
-                        padding: EdgeInsets.all(16.0),
-                        shape: CircleBorder(),
-                        onPressed: () {
-                          download(
-                            globals.radioItemList[globals.currentAndNextItem[0]]
-                                .address,
-                          );
-                        },
+                      waveAmplitude: 0,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      size: Size(
+                        MediaQuery.of(context).size.width,
+                        100,
                       ),
-                      RawMaterialButton(
-                        elevation: 0,
-                        child: Icon(
-                          CupertinoIcons.square_arrow_up,
-                          size: 32.0,
-                          color: Colors.white,
-                        ),
-                        padding: EdgeInsets.all(16.0),
-                        shape: CircleBorder(),
-                        onPressed: () {
-                          Share.share(
-                            'https:\/\/m.radioramezan.com\/api\/readfile.php?media_address=media\/22-music\/1613288065-Alireza_Ghorbani.mp3',
-                            subject: 'یک آیتم صوتی جذاب از رادیو رمضان!',
-                          );
-                        },
+                    ),
+                    Container(
+                      height: 66,
+                      color: Theme.of(context).primaryColor,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: RawMaterialButton(
+                              elevation: 0,
+                              child: Icon(
+                                radioItemIsLiked ? CupertinoIcons.suit_heart_fill : CupertinoIcons.suit_heart,
+                                size: 32,
+                                color: radioItemIsLiked ? Colors.red : Colors.white,
+                              ),
+                              padding: EdgeInsets.all(12),
+                              shape: CircleBorder(),
+                              onPressed: () {
+                                setState(() {
+                                  radioItemIsLiked = !radioItemIsLiked;
+                                  globals.currentAndNextItem[0].isLiked = radioItemIsLiked;
+                                });
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: RawMaterialButton(
+                              elevation: 0,
+                              child: Icon(
+                                CupertinoIcons.arrow_down_to_line_alt,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                              padding: EdgeInsets.all(12),
+                              shape: CircleBorder(),
+                              onPressed: () {
+                                download(
+                                  globals.currentAndNextItem[0].address,
+                                );
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: RawMaterialButton(
+                              elevation: 0,
+                              child: Icon(
+                                CupertinoIcons.square_arrow_up,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                              padding: EdgeInsets.all(12),
+                              shape: CircleBorder(),
+                              onPressed: () {
+                                Share.share(
+                                  globals.currentAndNextItem[0].address,
+                                  subject: 'یک آیتم جذاب از رادیو رمضان!',
+                                );
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: RawMaterialButton(
+                              elevation: 0,
+                              child: Icon(
+                                CupertinoIcons.chat_bubble,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                              padding: EdgeInsets.all(12),
+                              shape: CircleBorder(),
+                              onPressed: () {
+                                displayCommentDialog(
+                                  context,
+                                  globals.currentAndNextItem[0],
+                                );
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: RawMaterialButton(
+                              elevation: 0,
+                              child: Icon(
+                                CupertinoIcons.xmark,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                              padding: EdgeInsets.all(12),
+                              shape: CircleBorder(),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                      RawMaterialButton(
-                        elevation: 0,
-                        child: Icon(
-                          CupertinoIcons.chat_bubble,
-                          size: 32.0,
-                          color: Colors.white,
-                        ),
-                        padding: EdgeInsets.all(16.0),
-                        shape: CircleBorder(),
-                        onPressed: () {
-                          displayCommentDialog(
-                            context,
-                            globals
-                                .radioItemList[globals.currentAndNextItem[0]],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
                 Expanded(
                   flex: 1,
                   child: Container(
-                    padding: EdgeInsets.all(10),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              flex: 6,
-                              child: RawMaterialButton(
-                                elevation: 0,
-                                child: Icon(
-                                  Icons.cast,
-                                  size: 32.0,
-                                  color: Theme.of(context).disabledColor,
-                                ),
-                                padding: EdgeInsets.all(16.0),
-                                shape: CircleBorder(),
-                                onPressed: null,
-                              ),
+                        Expanded(
+                          flex: 6,
+                          child: RawMaterialButton(
+                            elevation: 0,
+                            child: Icon(
+                              Icons.cast,
+                              size: 32.0,
+                              color: Theme.of(context).disabledColor,
                             ),
-                            Expanded(
-                              flex: 6,
-                              child: RawMaterialButton(
-                                elevation: globals.radioStreamIsLoaded ? 2 : 0,
-                                fillColor: globals.radioStreamIsLoaded
-                                    ? Theme.of(context).primaryColor
-                                    : Theme.of(context).disabledColor,
-                                child: globals.radioStreamIsLoaded
-                                    ? AnimatedIcon(
-                                        icon: AnimatedIcons.play_pause,
-                                        size: 64,
-                                        color: Colors.white,
-                                        progress: globals.playPauseAnimation,
-                                      )
-                                    : Container(
-                                        height: 64,
-                                        width: 64,
-                                        padding: EdgeInsets.all(18.0),
-                                        child: CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
+                            padding: EdgeInsets.all(16.0),
+                            shape: CircleBorder(),
+                            onPressed: null,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 6,
+                          child: RawMaterialButton(
+                            elevation: globals.radioStreamIsLoaded ? 2 : 0,
+                            fillColor: globals.radioStreamIsLoaded
+                                ? Theme.of(context).primaryColor
+                                : Theme.of(context).disabledColor,
+                            child: globals.radioStreamIsLoaded
+                                ? AnimatedIcon(
+                                    icon: AnimatedIcons.play_pause,
+                                    size: 64,
+                                    color: Colors.white,
+                                    progress: globals.playPauseAnimation,
+                                  )
+                                : Container(
+                                    height: 64,
+                                    width: 64,
+                                    padding: EdgeInsets.all(18.0),
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
                                       ),
-                                padding: EdgeInsets.all(18.0),
-                                shape: CircleBorder(),
-                                onPressed: globals.radioStreamIsLoaded
-                                    ? () {
-                                        if (globals.radioPlayerIsPaused) {
-                                          globals.playPauseAnimationController
-                                              .forward();
-                                          globals.radioPlayer.play();
-                                        } else {
-                                          globals.playPauseAnimationController
-                                              .reverse();
-                                          globals.radioPlayer.pause();
-                                        }
-                                        globals.radioPlayerIsPaused =
-                                            !globals.radioPlayerIsPaused;
-                                      }
-                                    : null,
-                              ),
+                                    ),
+                                  ),
+                            padding: EdgeInsets.all(18.0),
+                            shape: CircleBorder(),
+                            onPressed: globals.radioStreamIsLoaded
+                                ? () {
+                                    if (globals.radioPlayerIsPaused) {
+                                      globals.playPauseAnimationController.forward();
+                                      kIsWeb ? globals.playRadio() : globals.radioPlayer.play();
+                                    } else {
+                                      globals.playPauseAnimationController.reverse();
+                                      kIsWeb ? globals.stopRadio() : globals.radioPlayer.stop();
+                                    }
+                                    globals.radioPlayerIsPaused = !globals.radioPlayerIsPaused;
+                                  }
+                                : null,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 6,
+                          child: RawMaterialButton(
+                            elevation: 0,
+                            child: Icon(
+                              globals.radioPlayerIsMuted
+                                  ? CupertinoIcons.speaker_slash_fill
+                                  : CupertinoIcons.speaker_1_fill,
+                              size: 32.0,
+                              color: globals.radioStreamIsLoaded ? Colors.black : Theme.of(context).disabledColor,
                             ),
-                            Expanded(
-                              flex: 6,
-                              child: RawMaterialButton(
-                                elevation: 0,
-                                child: Icon(
-                                  globals.radioPlayerIsMuted
-                                      ? CupertinoIcons.speaker_slash_fill
-                                      : CupertinoIcons.speaker_1_fill,
-                                  size: 32.0,
-                                  color: globals.radioStreamIsLoaded
-                                      ? Colors.black
-                                      : Theme.of(context).disabledColor,
-                                ),
-                                padding: EdgeInsets.all(16.0),
-                                shape: CircleBorder(),
-                                onPressed: globals.radioStreamIsLoaded
-                                    ? () {
-                                        globals.radioPlayerIsMuted
-                                            ? globals.radioPlayer.setVolume(100)
+                            padding: EdgeInsets.all(16.0),
+                            shape: CircleBorder(),
+                            onPressed: globals.radioStreamIsLoaded
+                                ? () {
+                                    globals.radioPlayerIsMuted
+                                        ? kIsWeb
+                                            ? globals.setRadioVolume(1)
+                                            : globals.radioPlayer.setVolume(1)
+                                        : kIsWeb
+                                            ? globals.setRadioVolume(0)
                                             : globals.radioPlayer.setVolume(0);
-                                        setState(() {
-                                          globals.radioPlayerIsMuted =
-                                              !globals.radioPlayerIsMuted;
-                                        });
-                                      }
-                                    : null,
-                              ),
-                            ),
-                          ],
+                                    setState(() {
+                                      globals.radioPlayerIsMuted = !globals.radioPlayerIsMuted;
+                                    });
+                                  }
+                                : null,
+                          ),
                         ),
                       ],
                     ),
