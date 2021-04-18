@@ -1,4 +1,5 @@
 // loading required packages
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:radioramezan/globals.dart';
@@ -9,8 +10,7 @@ class RadioBar extends StatefulWidget {
   RadioBarState createState() => RadioBarState();
 }
 
-class RadioBarState extends State<RadioBar>
-    with SingleTickerProviderStateMixin {
+class RadioBarState extends State<RadioBar> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     globals.playPauseAnimationController = AnimationController(
@@ -21,8 +21,7 @@ class RadioBarState extends State<RadioBar>
       curve: Curves.linear,
       parent: globals.playPauseAnimationController,
     );
-    if (!globals.radioPlayerIsPaused)
-      globals.playPauseAnimationController.forward();
+    if (!globals.radioPlayerIsPaused) globals.playPauseAnimationController.forward();
     super.initState();
   }
 
@@ -66,7 +65,7 @@ class RadioBarState extends State<RadioBar>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
+            children: [
               SizedBox(width: 5),
               RawMaterialButton(
                 constraints: BoxConstraints(
@@ -92,13 +91,12 @@ class RadioBarState extends State<RadioBar>
                     ? () {
                         if (globals.radioPlayerIsPaused) {
                           globals.playPauseAnimationController.forward();
-                          globals.radioPlayer.play();
+                          kIsWeb ? globals.playRadio() : globals.radioPlayer.play();
                         } else {
                           globals.playPauseAnimationController.reverse();
-                          globals.radioPlayer.pause();
+                          kIsWeb ? globals.stopRadio() : globals.radioPlayer.stop();
                         }
-                        globals.radioPlayerIsPaused =
-                            !globals.radioPlayerIsPaused;
+                        globals.radioPlayerIsPaused = !globals.radioPlayerIsPaused;
                       }
                     : null,
               ),
@@ -112,7 +110,7 @@ class RadioBarState extends State<RadioBar>
                       initialPage: 0,
                       enableInfiniteScroll: true,
                       reverse: false,
-                      autoPlay: true,
+                      autoPlay: globals.currentAndNextItem.length < 2 ? false : true,
                       autoPlayInterval: Duration(seconds: 10),
                       autoPlayAnimationDuration: Duration(seconds: 1),
                       autoPlayCurve: Curves.fastOutSlowIn,
@@ -124,36 +122,33 @@ class RadioBarState extends State<RadioBar>
                           horizontal: 10,
                         ),
                         title: Text(
-                          globals
-                                      .radioItemList[
-                                          globals.currentAndNextItem[index]]
-                                      .description !=
-                                  ''
-                              ? globals
-                                      .radioItemList[
-                                          globals.currentAndNextItem[index]]
-                                      .title +
-                                  ' (' +
-                                  globals
-                                      .radioItemList[
-                                          globals.currentAndNextItem[index]]
-                                      .description +
-                                  ')'
-                              : globals
-                                  .radioItemList[
-                                      globals.currentAndNextItem[index]]
-                                  .title,
+                          globals.radioItemListToday.isNotEmpty
+                              ? globals.currentAndNextItem[index].description != ''
+                                  ? globals.currentAndNextItem[index].title +
+                                      ' (' +
+                                      globals.currentAndNextItem[index].description +
+                                      ')'
+                                  : globals.currentAndNextItem[index].title
+                              : 'آیتمی برای پخش وجود ندارد.',
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: Container(
                           padding: EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: index == 0 ? Colors.red : Colors.lightGreen,
+                            color: globals.radioItemListToday.isNotEmpty
+                                ? index == 0
+                                    ? Colors.red
+                                    : Colors.lightGreen
+                                : Colors.lightBlue,
                             shape: BoxShape.rectangle,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Text(
-                            index == 0 ? 'پخش زنده' : 'برنامه بعد',
+                            globals.radioItemListToday.isNotEmpty
+                                ? index == 0
+                                    ? 'پخش زنده'
+                                    : 'برنامه بعد'
+                                : 'عدم پخش',
                             style: TextStyle(
                               color: Colors.white,
                             ),
