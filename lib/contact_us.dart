@@ -7,7 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 
@@ -17,7 +18,7 @@ class ContactUs extends StatefulWidget {
 }
 
 class ContactUsState extends State<ContactUs> {
-  GlobalKey<ScaffoldState> contactUsScaffoldState;
+  GlobalKey<ScaffoldState> contactUsScaffoldKey;
   ScrollController scrollController;
   GlobalKey<FormState> messageFormKey;
   TextEditingController senderController, emailController, messageController;
@@ -120,7 +121,7 @@ class ContactUsState extends State<ContactUs> {
 
   @override
   void initState() {
-    contactUsScaffoldState = GlobalKey<ScaffoldState>();
+    contactUsScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
     messageFormKey = GlobalKey<FormState>();
     senderController = TextEditingController();
@@ -141,53 +142,23 @@ class ContactUsState extends State<ContactUs> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Settings.getValue<bool>("darkThemeEnabled", false)
-          ? Color.fromRGBO(50, 50, 50, 1)
-          : RadioRamezanColors.ramady,
-      margin:
-          kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
-              ? EdgeInsets.symmetric(
-                  horizontal: (MediaQuery.of(context).size.width -
-                          MediaQuery.of(context).size.height /
-                              globals.webAspectRatio) /
-                      2)
-              : null,
+      margin: kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+          ? EdgeInsets.symmetric(
+              horizontal:
+                  (MediaQuery.of(context).size.width - MediaQuery.of(context).size.height / globals.webAspectRatio) / 2)
+          : null,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: ClipRRect(
         child: Scaffold(
-          key: contactUsScaffoldState,
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: kIsWeb
-                    ? globals.webTopPaddingFAB
-                    : MediaQuery.of(context).padding.top,
-              ),
-              child: FloatingActionButton(
-                elevation: 2,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.chevron_down),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ),
+          key: contactUsScaffoldKey,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               image: DecorationImage(
                 image: AssetImage('images/golden_mosque_20percent.png'),
                 fit: BoxFit.fitWidth,
                 alignment: Alignment.bottomCenter,
-              ),
-            ),
-            foregroundDecoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/modal_top.png'),
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter,
               ),
             ),
             child: FutureBuilder(
@@ -195,49 +166,76 @@ class ContactUsState extends State<ContactUs> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return Column(
-                    children: <Widget>[
-                      SizedBox(
-                        height: .25 *
-                            (kIsWeb
-                                ? MediaQuery.of(context).size.height /
-                                    globals.webAspectRatio
-                                : MediaQuery.of(context).size.width),
-                      ),
-                      Container(
-                        child: Text(
-                          'ارتباط با ما',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).accentColor,
+                    children: [
+                      Stack(
+                        alignment: Alignment.topCenter,
+                        children: [
+                          WaveWidget(
+                            config: CustomConfig(
+                              colors: [Colors.white70, Colors.white54, Colors.white30, Colors.white],
+                              durations: [32000, 16000, 8000, 4000],
+                              heightPercentages: [.65, .68, .75, .8],
+                            ),
+                            waveAmplitude: 0,
+                            backgroundColor: Theme.of(context).primaryColor,
+                            size: Size(
+                              MediaQuery.of(context).size.width,
+                              100,
+                            ),
                           ),
-                        ),
+                          Container(
+                            height: 100,
+                            margin: EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'ارتباط با ما',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                FloatingActionButton(
+                                  elevation: 2,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    CupertinoIcons.xmark,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 20),
                       Expanded(
                         flex: 1,
                         child: DraggableScrollbar.semicircle(
                           controller: scrollController,
                           child: ListView.builder(
                             controller: scrollController,
-                            padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            padding: EdgeInsets.all(20),
                             itemCount: 1,
                             itemBuilder: (context, index) {
                               return Column(
-                                children: <Widget>[
+                                children: [
                                   Text(snapshot.data),
                                   SizedBox(height: 20),
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                                     children: [
                                       Column(
                                         children: [
                                           InkWell(
                                             customBorder: CircleBorder(),
                                             child: CircleAvatar(
-                                              backgroundColor: Color.fromRGBO(
-                                                  225, 48, 108, 1),
+                                              backgroundColor: Color.fromRGBO(225, 48, 108, 1),
                                               radius: 42,
                                               child: Icon(
                                                 CupertinoIcons.phone,
@@ -258,8 +256,7 @@ class ContactUsState extends State<ContactUs> {
                                           InkWell(
                                             customBorder: CircleBorder(),
                                             child: CircleAvatar(
-                                              backgroundColor:
-                                                  RadioRamezanColors.goldy,
+                                              backgroundColor: RadioRamezanColors.goldy,
                                               radius: 42,
                                               child: Icon(
                                                 CupertinoIcons.mail,
@@ -268,8 +265,7 @@ class ContactUsState extends State<ContactUs> {
                                               ),
                                             ),
                                             onTap: () {
-                                              launch(
-                                                  'mailto:abbas.soltanian@gmail.com');
+                                              launch('mailto:abbas.soltanian@gmail.com');
                                             },
                                           ),
                                           SizedBox(height: 10),
@@ -281,8 +277,7 @@ class ContactUsState extends State<ContactUs> {
                                           InkWell(
                                             customBorder: CircleBorder(),
                                             child: CircleAvatar(
-                                              backgroundColor: Color.fromRGBO(
-                                                  0, 136, 204, 1),
+                                              backgroundColor: Color.fromRGBO(0, 136, 204, 1),
                                               radius: 42,
                                               child: Icon(
                                                 CupertinoIcons.paperplane,
@@ -291,8 +286,7 @@ class ContactUsState extends State<ContactUs> {
                                               ),
                                             ),
                                             onTap: () {
-                                              launch(
-                                                  'https://t.me/RadioRamezan2');
+                                              launch('https://t.me/RadioRamezan2');
                                             },
                                           ),
                                           SizedBox(height: 10),
@@ -305,7 +299,7 @@ class ContactUsState extends State<ContactUs> {
                                   Form(
                                     key: messageFormKey,
                                     child: Column(
-                                      children: <Widget>[
+                                      children: [
                                         FormField(
                                           builder: (FormFieldState state) {
                                             return InputDecorator(
@@ -316,11 +310,9 @@ class ContactUsState extends State<ContactUs> {
                                                 border: OutlineInputBorder(),
                                               ),
                                               isEmpty: true,
-                                              child:
-                                                  DropdownButtonHideUnderline(
+                                              child: DropdownButtonHideUnderline(
                                                 child: DropdownButton<String>(
-                                                  icon: Icon(CupertinoIcons
-                                                      .chevron_down),
+                                                  icon: Icon(CupertinoIcons.chevron_down),
                                                   hint: Text('موضوع'),
                                                   value: subjectValue,
                                                   isDense: true,
@@ -332,31 +324,24 @@ class ContactUsState extends State<ContactUs> {
                                                   },
                                                   items: [
                                                     DropdownMenuItem(
-                                                      value:
-                                                          'آمادگی جهت همکاری',
-                                                      child: Text(
-                                                          'آمادگی جهت همکاری'),
+                                                      value: 'آمادگی جهت همکاری',
+                                                      child: Text('آمادگی جهت همکاری'),
                                                     ),
                                                     DropdownMenuItem(
                                                       value: 'حمایت مالی',
                                                       child: Text('حمایت مالی'),
                                                     ),
                                                     DropdownMenuItem(
-                                                      value:
-                                                          'درخواست تبلیغات در رادیو رمضان',
-                                                      child: Text(
-                                                          'درخواست تبلیغات در رادیو رمضان'),
+                                                      value: 'درخواست تبلیغات در رادیو رمضان',
+                                                      child: Text('درخواست تبلیغات در رادیو رمضان'),
                                                     ),
                                                     DropdownMenuItem(
                                                       value: 'پیشنهاد و انتقاد',
-                                                      child: Text(
-                                                          'پیشنهاد و انتقاد'),
+                                                      child: Text('پیشنهاد و انتقاد'),
                                                     ),
                                                     DropdownMenuItem(
-                                                      value:
-                                                          'گزارش مشکلات اپلیکیشن',
-                                                      child: Text(
-                                                          'گزارش مشکلات اپلیکیشن'),
+                                                      value: 'گزارش مشکلات اپلیکیشن',
+                                                      child: Text('گزارش مشکلات اپلیکیشن'),
                                                     ),
                                                   ],
                                                 ),
@@ -378,8 +363,7 @@ class ContactUsState extends State<ContactUs> {
                                           ),
                                           textInputAction: TextInputAction.next,
                                           validator: (value) {
-                                            if (value.isEmpty)
-                                              return 'فیلد نام خالی است!';
+                                            if (value.isEmpty) return 'فیلد نام خالی است!';
                                             return null;
                                           },
                                         ),
@@ -398,13 +382,10 @@ class ContactUsState extends State<ContactUs> {
                                           textDirection: TextDirection.ltr,
                                           textInputAction: TextInputAction.next,
                                           validator: (value) {
-                                            if (value.isEmpty)
-                                              return 'فیلد ایمیل خالی است!';
-                                            Pattern pattern =
-                                                '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}';
+                                            if (value.isEmpty) return 'فیلد ایمیل خالی است!';
+                                            Pattern pattern = '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}';
                                             RegExp regex = RegExp(pattern);
-                                            if (!regex.hasMatch(value))
-                                              return 'ایمیل را در قالب صحیح وارد کنید!';
+                                            if (!regex.hasMatch(value)) return 'ایمیل را در قالب صحیح وارد کنید!';
                                             return null;
                                           },
                                         ),
@@ -424,8 +405,7 @@ class ContactUsState extends State<ContactUs> {
                                           ),
                                           textInputAction: TextInputAction.done,
                                           validator: (value) {
-                                            if (value.isEmpty)
-                                              return 'متن پیام خالی است!';
+                                            if (value.isEmpty) return 'متن پیام خالی است!';
                                             return null;
                                           },
                                         ),
@@ -434,18 +414,14 @@ class ContactUsState extends State<ContactUs> {
                                         ),
                                         Container(
                                           height: 50,
-                                          width:
-                                              MediaQuery.of(context).size.width,
+                                          width: MediaQuery.of(context).size.width,
                                           child: RawMaterialButton(
                                             elevation: messageIsSending ? 0 : 2,
                                             fillColor: messageIsSending
-                                                ? Theme.of(context)
-                                                    .disabledColor
-                                                : Theme.of(context)
-                                                    .primaryColor,
+                                                ? Theme.of(context).disabledColor
+                                                : Theme.of(context).primaryColor,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
+                                              borderRadius: BorderRadius.circular(5),
                                             ),
                                             onPressed: !messageIsSending
                                                 ? () {
@@ -467,11 +443,8 @@ class ContactUsState extends State<ContactUs> {
                                                   : Container(
                                                       height: 24,
                                                       width: 24,
-                                                      child:
-                                                          CircularProgressIndicator(
-                                                        valueColor:
-                                                            AlwaysStoppedAnimation<
-                                                                Color>(
+                                                      child: CircularProgressIndicator(
+                                                        valueColor: AlwaysStoppedAnimation<Color>(
                                                           Colors.white,
                                                         ),
                                                       ),

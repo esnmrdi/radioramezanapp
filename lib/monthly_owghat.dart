@@ -2,9 +2,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 import 'data_models/owghat_model.dart';
@@ -15,12 +15,12 @@ class MonthlyOwghat extends StatefulWidget {
 }
 
 class MonthlyOwghatState extends State<MonthlyOwghat> {
-  GlobalKey<ScaffoldState> monthlyOwghatScaffoldState;
+  GlobalKey<ScaffoldState> monthlyOwghatScaffoldKey;
   ScrollController scrollController;
 
   @override
   void initState() {
-    monthlyOwghatScaffoldState = GlobalKey<ScaffoldState>();
+    monthlyOwghatScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
     super.initState();
   }
@@ -34,78 +34,77 @@ class MonthlyOwghatState extends State<MonthlyOwghat> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Settings.getValue<bool>("darkThemeEnabled", false)
-          ? Color.fromRGBO(50, 50, 50, 1)
-          : RadioRamezanColors.ramady,
-      margin:
-          kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
-              ? EdgeInsets.symmetric(
-                  horizontal: (MediaQuery.of(context).size.width -
-                          MediaQuery.of(context).size.height /
-                              globals.webAspectRatio) /
-                      2)
-              : null,
+      margin: kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+          ? EdgeInsets.symmetric(
+              horizontal:
+                  (MediaQuery.of(context).size.width - MediaQuery.of(context).size.height / globals.webAspectRatio) / 2)
+          : null,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: ClipRRect(
         child: Scaffold(
-          key: monthlyOwghatScaffoldState,
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: Align(
-            alignment: Alignment.topLeft,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: kIsWeb
-                    ? globals.webTopPaddingFAB
-                    : MediaQuery.of(context).padding.top,
-              ),
-              child: FloatingActionButton(
-                elevation: 2,
-                backgroundColor: Theme.of(context).primaryColor,
-                child: Icon(CupertinoIcons.chevron_down),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ),
+          key: monthlyOwghatScaffoldKey,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               image: DecorationImage(
                 image: AssetImage('images/golden_mosque_20percent.png'),
                 fit: BoxFit.fitWidth,
                 alignment: Alignment.bottomCenter,
               ),
             ),
-            foregroundDecoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/modal_top.png'),
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter,
-              ),
-            ),
             child: Column(
               mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                SizedBox(
-                  height: .25 *
-                      (kIsWeb
-                          ? MediaQuery.of(context).size.height /
-                              globals.webAspectRatio
-                          : MediaQuery.of(context).size.width),
-                ),
-                Container(
-                  child: Text(
-                    'اوقات شرعی ماه جاری',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).accentColor,
+              children: [
+                Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    WaveWidget(
+                      config: CustomConfig(
+                        colors: [Colors.white70, Colors.white54, Colors.white30, Colors.white],
+                        durations: [32000, 16000, 8000, 4000],
+                        heightPercentages: [.65, .68, .75, .8],
+                      ),
+                      waveAmplitude: 0,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      size: Size(
+                        MediaQuery.of(context).size.width,
+                        100,
+                      ),
                     ),
-                  ),
+                    Container(
+                      height: 100,
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'اوقات شرعی ماه جاری',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          FloatingActionButton(
+                            elevation: 2,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              CupertinoIcons.xmark,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 20),
                 Container(
-                  padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  padding: EdgeInsets.all(20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -196,17 +195,14 @@ class MonthlyOwghatState extends State<MonthlyOwghat> {
                         Owghat owghat = globals.owghatList[index];
                         return Container(
                           height: 30,
-                          color: index ==
-                                  tz.TZDateTime.now(globals.timeZone).day - 1
+                          color: index == DateTime.now().day - 1
                               ? RadioRamezanColors.goldy[100]
                               : index % 2 == 0
-                                  ? Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(.05)
+                                  ? Theme.of(context).primaryColor.withOpacity(.05)
                                   : Colors.transparent,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
+                            children: [
                               SizedBox(width: 20),
                               Expanded(
                                 flex: 1,
