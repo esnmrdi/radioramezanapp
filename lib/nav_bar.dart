@@ -17,9 +17,7 @@ class NavBar extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: GNav(
           gap: 0,
-          activeColor: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Theme.of(context).primaryColor,
+          activeColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Theme.of(context).primaryColor,
           iconSize: 28,
           padding: EdgeInsets.symmetric(horizontal: 15, vertical: 6),
           duration: Duration(milliseconds: 500),
