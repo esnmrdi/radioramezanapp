@@ -27,8 +27,7 @@ class PrayersState extends State<Prayers> {
     if (checkStoppedTyping != null) {
       setState(() => checkStoppedTyping.cancel());
     }
-    setState(() =>
-        checkStoppedTyping = Timer(duration, () => updateSearchQuery(text)));
+    setState(() => checkStoppedTyping = Timer(duration, () => updateSearchQuery(text)));
   }
 
   void updateSearchQuery(String text) async {
@@ -38,8 +37,7 @@ class PrayersState extends State<Prayers> {
       return;
     }
     globals.prayerList.forEach((prayer) {
-      if (prayer.title.contains(text) || prayer.reciter.contains(text))
-        searchResult.add(prayer);
+      if (prayer.title.contains(text) || prayer.reciter.contains(text)) searchResult.add(prayer);
     });
     setState(() {});
     if (searchResult.isEmpty) {
@@ -81,6 +79,7 @@ class PrayersState extends State<Prayers> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: prayersScaffoldKey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         centerTitle: true,
         title: isSearching
@@ -92,6 +91,11 @@ class PrayersState extends State<Prayers> {
                   hintStyle: TextStyle(
                     color: Colors.white30,
                   ),
+                  border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
                 ),
                 style: TextStyle(
                   color: Colors.white,
@@ -108,7 +112,7 @@ class PrayersState extends State<Prayers> {
             globals.mainScaffoldKey.currentState.openDrawer();
           },
         ),
-        actions: <Widget>[
+        actions: [
           isSearching
               ? IconButton(
                   icon: Icon(
@@ -136,23 +140,16 @@ class PrayersState extends State<Prayers> {
         brightness: Brightness.dark,
       ),
       body: Container(
-        color: Settings.getValue<bool>("darkThemeEnabled", false)
-            ? Color.fromRGBO(50, 50, 50, .5)
-            : Theme.of(context).primaryColor.withOpacity(.1),
         child: DraggableScrollbar.semicircle(
           controller: scrollController,
           child: ListView.builder(
             controller: scrollController,
             padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-            itemCount: isSearching && searchResult.length != 0
-                ? searchResult.length
-                : globals.prayerList.length,
+            itemCount: isSearching && searchResult.isNotEmpty ? searchResult.length : globals.prayerList.length,
             itemBuilder: (context, index) {
-              Prayer prayer = isSearching && searchResult.length != 0
-                  ? searchResult[index]
-                  : globals.prayerList[index];
+              Prayer prayer = isSearching && searchResult.isNotEmpty ? searchResult[index] : globals.prayerList[index];
               return Column(
-                children: <Widget>[
+                children: [
                   Card(
                     elevation: 2,
                     margin: EdgeInsets.zero,
@@ -180,9 +177,7 @@ class PrayersState extends State<Prayers> {
                         ),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(5),
-                          child: Image.asset('images/poster_' +
-                              prayer.category +
-                              '_prayers.jpg'),
+                          child: Image.asset('images/poster_' + prayer.category + '_prayers.jpg'),
                         ),
                         title: Text(
                           prayer.title,
