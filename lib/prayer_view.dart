@@ -2,11 +2,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:universal_html/js.dart' as js;
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 import 'package:radioramezan/globals.dart';
-import 'package:radioramezan/theme.dart';
 import 'package:radioramezan/data_models/prayer_model.dart';
 
 class PrayerView extends StatefulWidget {
@@ -18,17 +19,11 @@ class PrayerView extends StatefulWidget {
   PrayerViewState createState() => PrayerViewState();
 }
 
-class PrayerViewState extends State<PrayerView>
-    with SingleTickerProviderStateMixin {
+class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMixin {
   GlobalKey<ScaffoldState> prayerViewScaffoldKey;
   ScrollController scrollController;
   AssetsAudioPlayer prayerPlayer;
-  bool showControls,
-      showTranslation,
-      prayerPlayerIsMuted,
-      prayerPlayerIsPaused,
-      prayerAudioIsLoaded,
-      sliderIsChanging;
+  bool showControls, showTranslation, prayerPlayerIsMuted, prayerPlayerIsPaused, prayerAudioIsLoaded, sliderIsChanging;
   double sliderSelectiveValue, sliderProgressiveValue, fontSize;
   String path;
   Metas metas;
@@ -36,53 +31,83 @@ class PrayerViewState extends State<PrayerView>
   Animation<double> playPauseAnimation;
   AnimationController playPauseAnimationController;
 
-  Future<Null> loadPrayerAudio(String path, Metas metas) async {
-    try {
-      await prayerPlayer.open(
-        kIsWeb ? Audio.network(path, metas: metas) : Audio(path, metas: metas),
-        autoStart: false,
-        respectSilentMode: false,
-        showNotification: true,
-        notificationSettings: NotificationSettings(
-          playPauseEnabled: true,
-          seekBarEnabled: true,
-        ),
-        playInBackground: PlayInBackground.enabled,
-        headPhoneStrategy: HeadPhoneStrategy.none,
-      );
-      setState(() {
-        durationInSeconds = prayerPlayer.current.value.audio.duration.inSeconds;
-        prayerAudioIsLoaded = true;
-      });
-    } catch (error) {
-      print(error);
+  Future<Null> loadPrayer() async {
+    if (kIsWeb) {
+      js.context.callMethod('loadPrayer', [globals.fixPath(path)]);
+      prayerAudioIsLoaded = true;
+    } else {
+      try {
+        await prayerPlayer.open(
+          kIsWeb ? Audio.network(path, metas: metas) : Audio(path, metas: metas),
+          autoStart: false,
+          respectSilentMode: false,
+          showNotification: false,
+          // notificationSettings: NotificationSettings(
+          //   playPauseEnabled: true,
+          //   seekBarEnabled: true,
+          // ),
+          playInBackground: PlayInBackground.enabled,
+          headPhoneStrategy: HeadPhoneStrategy.none,
+        );
+        setState(() {
+          durationInSeconds = prayerPlayer.current.valueWrapper.value.audio.duration.inSeconds;
+          prayerAudioIsLoaded = true;
+        });
+      } catch (error) {
+        print(error);
+      }
     }
+  }
+
+  void playPrayer() {
+    js.context.callMethod('playPrayer');
+  }
+
+  void pausePrayer() {
+    js.context.callMethod('pausePrayer');
+  }
+
+  void stopPrayer() {
+    js.context.callMethod('stopPrayer');
+  }
+
+  void setPrayerVolume(double vol) {
+    js.context.callMethod('setPrayerVolume', [vol]);
+  }
+
+  void seekPrayer(int duration) {
+    js.context.callMethod('seekPrayer', [duration]);
+  }
+
+  double prayerPos() {
+    return js.context.callMethod('prayerPos');
+  }
+
+  double prayerDuration() {
+    return js.context.callMethod('prayerDuration');
   }
 
   @override
   void initState() {
     prayerViewScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
-    prayerPlayer = AssetsAudioPlayer.newPlayer();
+    if (!kIsWeb) prayerPlayer = AssetsAudioPlayer.newPlayer();
     fontSize = 22;
     showControls = false;
-    showTranslation = false;
+    showTranslation = true;
     prayerAudioIsLoaded = false;
     prayerPlayerIsMuted = false;
     prayerPlayerIsPaused = true;
     sliderIsChanging = false;
     sliderSelectiveValue = 0;
     sliderProgressiveValue = 0;
-    path = 'audios/' +
-        (widget.prayer.audio.isNotEmpty
-            ? widget.prayer.audio
-            : 'azan_alert_2.mp3');
+    path = 'audios/' + (widget.prayer.audio.isNotEmpty ? widget.prayer.audio : 'azan_alert_2.mp3');
     metas = Metas(
       title: widget.prayer.title,
       artist: widget.prayer.reciter,
       album: 'رادیو رمضان',
     );
-    loadPrayerAudio(path, metas);
+    loadPrayer();
     playPauseAnimationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 200),
@@ -104,94 +129,87 @@ class PrayerViewState extends State<PrayerView>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Settings.getValue<bool>("darkThemeEnabled", false)
-          ? Color.fromRGBO(50, 50, 50, 1)
-          : RadioRamezanColors.ramady,
-      margin:
-          kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
-              ? EdgeInsets.symmetric(
-                  horizontal: (MediaQuery.of(context).size.width -
-                          MediaQuery.of(context).size.height /
-                              globals.webAspectRatio) /
-                      2)
-              : null,
+      margin: kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+          ? EdgeInsets.symmetric(
+              horizontal:
+                  (MediaQuery.of(context).size.width - MediaQuery.of(context).size.height / globals.webAspectRatio) / 2)
+          : null,
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: ClipRRect(
         child: Scaffold(
           key: prayerViewScaffoldKey,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top: kIsWeb
-                        ? globals.webTopPaddingFAB
-                        : MediaQuery.of(context).padding.top,
-                  ),
-                  child: FloatingActionButton(
-                    elevation: 2,
-                    backgroundColor: Theme.of(context).primaryColor,
-                    child: Icon(CupertinoIcons.chevron_down),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-              ),
-              !showControls
-                  ? FloatingActionButton(
-                      elevation: 2,
-                      backgroundColor: Theme.of(context).primaryColor,
-                      child: Icon(Icons.tune),
-                      onPressed: () {
-                        setState(() {
-                          showControls = true;
-                        });
-                      },
-                    )
-                  : SizedBox(),
-            ],
-          ),
+          floatingActionButton: !showControls
+              ? FloatingActionButton(
+                  elevation: 2,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  child: Icon(Icons.tune),
+                  onPressed: () {
+                    setState(() {
+                      showControls = true;
+                    });
+                  },
+                )
+              : null,
           body: Container(
             decoration: BoxDecoration(
+              color: Colors.white,
               image: DecorationImage(
                 image: AssetImage('images/golden_mosque_20percent.png'),
                 fit: BoxFit.fitWidth,
                 alignment: Alignment.bottomCenter,
               ),
             ),
-            foregroundDecoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/modal_top.png'),
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter,
-              ),
-            ),
             child: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: .25 *
-                      (kIsWeb
-                          ? MediaQuery.of(context).size.height /
-                              globals.webAspectRatio
-                          : MediaQuery.of(context).size.width),
-                ),
-                Center(
-                  child: Text(
-                    widget.prayer.title,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).accentColor,
+              children: [
+                Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    WaveWidget(
+                      config: CustomConfig(
+                        colors: [Colors.white70, Colors.white54, Colors.white30, Colors.white],
+                        durations: [32000, 16000, 8000, 4000],
+                        heightPercentages: [.65, .68, .75, .8],
+                      ),
+                      waveAmplitude: 0,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      size: Size(
+                        MediaQuery.of(context).size.width,
+                        100,
+                      ),
                     ),
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
+                    Container(
+                      height: 100,
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.prayer.title,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          FloatingActionButton(
+                            elevation: 2,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              CupertinoIcons.xmark,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            onPressed: () {
+                              if (kIsWeb) stopPrayer();
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 Expanded(
                   flex: 1,
@@ -199,7 +217,7 @@ class PrayerViewState extends State<PrayerView>
                     controller: scrollController,
                     child: ListView.builder(
                       controller: scrollController,
-                      padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      padding: EdgeInsets.all(20),
                       itemCount: 1,
                       itemBuilder: (context, index) {
                         return Column(
@@ -207,7 +225,7 @@ class PrayerViewState extends State<PrayerView>
                             (verse) {
                               return Container(
                                 child: Column(
-                                  children: <Widget>[
+                                  children: [
                                     verse.arabic != ''
                                         ? Text(
                                             verse.arabic,
@@ -233,8 +251,7 @@ class PrayerViewState extends State<PrayerView>
                                                   fontFamily: 'tahrir',
                                                   fontSize: fontSize,
                                                   height: 1.5,
-                                                  color: Theme.of(context)
-                                                      .primaryColor,
+                                                  color: Theme.of(context).primaryColor,
                                                 ),
                                                 textAlign: TextAlign.center,
                                               )
@@ -263,132 +280,99 @@ class PrayerViewState extends State<PrayerView>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            PlayerBuilder.currentPosition(
-                              player: prayerPlayer,
-                              builder: (context, position) {
-                                positionInSeconds = position.inSeconds;
-                                remainingInSeconds =
-                                    durationInSeconds - positionInSeconds;
-                                sliderProgressiveValue =
-                                    (positionInSeconds / durationInSeconds) *
-                                        100;
-                                return Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 10),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          (prayerAudioIsLoaded &&
-                                                  widget
-                                                      .prayer.audio.isNotEmpty)
-                                              ? (remainingInSeconds / 60)
-                                                      .truncate()
-                                                      .toString()
-                                                      .padLeft(2, '0') +
-                                                  ':' +
-                                                  (remainingInSeconds % 60)
-                                                      .toString()
-                                                      .padLeft(2, '0')
-                                              : '00:00',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: (prayerAudioIsLoaded &&
-                                                      widget.prayer.audio
-                                                          .isNotEmpty)
-                                                  ? Theme.of(context)
-                                                      .primaryColor
-                                                  : Theme.of(context)
-                                                      .disabledColor),
+                            kIsWeb
+                                ? SizedBox()
+                                : PlayerBuilder.currentPosition(
+                                    player: prayerPlayer,
+                                    builder: (context, position) {
+                                      positionInSeconds = position.inSeconds;
+                                      remainingInSeconds = durationInSeconds - positionInSeconds;
+                                      sliderProgressiveValue = (positionInSeconds / durationInSeconds) * 100;
+                                      return Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 10),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
+                                                    ? (remainingInSeconds / 60).truncate().toString().padLeft(2, '0') +
+                                                        ':' +
+                                                        (remainingInSeconds % 60).toString().padLeft(2, '0')
+                                                    : '00:00',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
+                                                      ? Theme.of(context).primaryColor
+                                                      : Theme.of(context).disabledColor,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 14,
+                                              child: Directionality(
+                                                textDirection: TextDirection.ltr,
+                                                child: Slider(
+                                                  activeColor: Theme.of(context).primaryColor,
+                                                  inactiveColor: Theme.of(context).disabledColor,
+                                                  min: 0,
+                                                  max: 100,
+                                                  value:
+                                                      sliderIsChanging ? sliderSelectiveValue : sliderProgressiveValue,
+                                                  onChanged: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
+                                                      ? (newSliderValue) {
+                                                          sliderIsChanging = true;
+                                                          setState(() {
+                                                            sliderSelectiveValue = newSliderValue;
+                                                          });
+                                                        }
+                                                      : null,
+                                                  onChangeEnd: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
+                                                      ? (newSliderValue) {
+                                                          sliderIsChanging = false;
+                                                          prayerPlayer.seek(Duration(
+                                                              seconds: ((newSliderValue / 100) * durationInSeconds)
+                                                                  .truncate()));
+                                                        }
+                                                      : null,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text(
+                                                (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
+                                                    ? (positionInSeconds / 60).truncate().toString().padLeft(2, '0') +
+                                                        ':' +
+                                                        (positionInSeconds % 60).toString().padLeft(2, '0')
+                                                    : '00:00',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
+                                                      ? Theme.of(context).primaryColor
+                                                      : Theme.of(context).disabledColor,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      Expanded(
-                                        flex: 14,
-                                        child: Directionality(
-                                          textDirection: TextDirection.ltr,
-                                          child: Slider(
-                                            activeColor:
-                                                Theme.of(context).primaryColor,
-                                            inactiveColor:
-                                                Theme.of(context).disabledColor,
-                                            min: 0,
-                                            max: 100,
-                                            value: sliderIsChanging
-                                                ? sliderSelectiveValue
-                                                : sliderProgressiveValue,
-                                            onChanged: (prayerAudioIsLoaded &&
-                                                    widget.prayer.audio
-                                                        .isNotEmpty)
-                                                ? (newSliderValue) {
-                                                    sliderIsChanging = true;
-                                                    setState(() {
-                                                      sliderSelectiveValue =
-                                                          newSliderValue;
-                                                    });
-                                                  }
-                                                : null,
-                                            onChangeEnd: (prayerAudioIsLoaded &&
-                                                    widget.prayer.audio
-                                                        .isNotEmpty)
-                                                ? (newSliderValue) {
-                                                    sliderIsChanging = false;
-                                                    prayerPlayer.seek(Duration(
-                                                        seconds: ((newSliderValue /
-                                                                    100) *
-                                                                durationInSeconds)
-                                                            .truncate()));
-                                                  }
-                                                : null,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(
-                                          (prayerAudioIsLoaded &&
-                                                  widget
-                                                      .prayer.audio.isNotEmpty)
-                                              ? (positionInSeconds / 60)
-                                                      .truncate()
-                                                      .toString()
-                                                      .padLeft(2, '0') +
-                                                  ':' +
-                                                  (positionInSeconds % 60)
-                                                      .toString()
-                                                      .padLeft(2, '0')
-                                              : '00:00',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              color: (prayerAudioIsLoaded &&
-                                                      widget.prayer.audio
-                                                          .isNotEmpty)
-                                                  ? Theme.of(context)
-                                                      .primaryColor
-                                                  : Theme.of(context)
-                                                      .disabledColor),
-                                        ),
-                                      ),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
+                              children: [
                                 Expanded(
                                   flex: 3,
                                   child: Column(
-                                    children: <Widget>[
+                                    children: [
                                       RawMaterialButton(
                                         elevation: 0,
                                         child: Icon(
                                           CupertinoIcons.zoom_in,
                                           size: 32.0,
-                                          color: fontSize < 28
-                                              ? Colors.black
-                                              : Theme.of(context).disabledColor,
+                                          color: fontSize < 28 ? Colors.black : Theme.of(context).disabledColor,
                                         ),
                                         padding: EdgeInsets.all(16.0),
                                         shape: CircleBorder(),
@@ -406,9 +390,7 @@ class PrayerViewState extends State<PrayerView>
                                         child: Icon(
                                           CupertinoIcons.zoom_out,
                                           size: 32.0,
-                                          color: fontSize > 22
-                                              ? Colors.black
-                                              : Theme.of(context).disabledColor,
+                                          color: fontSize > 22 ? Colors.black : Theme.of(context).disabledColor,
                                         ),
                                         padding: EdgeInsets.all(16.0),
                                         shape: CircleBorder(),
@@ -427,35 +409,30 @@ class PrayerViewState extends State<PrayerView>
                                 Expanded(
                                   flex: 3,
                                   child: Column(
-                                    children: <Widget>[
+                                    children: [
                                       RawMaterialButton(
                                         elevation: 0,
                                         child: Icon(
                                           CupertinoIcons.goforward_10,
                                           size: 32.0,
-                                          color: (prayerAudioIsLoaded &&
-                                                  widget
-                                                      .prayer.audio.isNotEmpty)
+                                          color: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                               ? Colors.black
                                               : Theme.of(context).disabledColor,
                                         ),
                                         padding: EdgeInsets.all(16.0),
                                         shape: CircleBorder(),
-                                        onPressed: (prayerAudioIsLoaded &&
-                                                widget.prayer.audio.isNotEmpty)
+                                        onPressed: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                             ? () {
-                                                prayerPlayer.seekBy(
-                                                    Duration(seconds: 10));
+                                                kIsWeb ? seekPrayer(10) : prayerPlayer.seekBy(Duration(seconds: 10));
                                               }
                                             : null,
                                       ),
                                       RawMaterialButton(
                                         elevation: 0,
                                         child: Icon(
-                                          Icons.cast,
+                                          CupertinoIcons.arrow_down_to_line_alt,
                                           size: 32.0,
-                                          color:
-                                              Theme.of(context).disabledColor,
+                                          color: Theme.of(context).disabledColor,
                                         ),
                                         padding: EdgeInsets.all(16.0),
                                         shape: CircleBorder(),
@@ -467,12 +444,8 @@ class PrayerViewState extends State<PrayerView>
                                 Expanded(
                                   flex: 6,
                                   child: RawMaterialButton(
-                                    elevation: (prayerAudioIsLoaded &&
-                                            widget.prayer.audio.isNotEmpty)
-                                        ? 2
-                                        : 0,
-                                    fillColor: (prayerAudioIsLoaded &&
-                                            widget.prayer.audio.isNotEmpty)
+                                    elevation: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty) ? 2 : 0,
+                                    fillColor: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                         ? Theme.of(context).primaryColor
                                         : Theme.of(context).disabledColor,
                                     child: prayerAudioIsLoaded
@@ -493,41 +466,30 @@ class PrayerViewState extends State<PrayerView>
                                                 height: 64,
                                                 width: 64,
                                                 padding: EdgeInsets.all(18.0),
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                          Color>(
+                                                child: CircularProgressIndicator(
+                                                  valueColor: AlwaysStoppedAnimation<Color>(
                                                     Colors.white,
                                                   ),
                                                 ),
                                               ),
                                     padding: EdgeInsets.all(18.0),
                                     shape: CircleBorder(),
-                                    onPressed: (prayerAudioIsLoaded &&
-                                            widget.prayer.audio.isNotEmpty)
+                                    onPressed: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                         ? () {
                                             if (prayerPlayerIsPaused) {
-                                              if (!globals
-                                                  .radioPlayerIsPaused) {
-                                                globals.radioPlayer.pause();
-                                                globals.radioPlayerIsPaused =
-                                                    true;
-                                                globals
-                                                    .playPauseAnimationController
-                                                    .reverse();
+                                              if (!globals.radioPlayerIsPaused) {
+                                                kIsWeb ? globals.stopRadio() : globals.radioPlayer.stop();
+                                                globals.radioPlayerIsPaused = true;
+                                                globals.playPauseAnimationController.reverse();
                                               }
-                                              playPauseAnimationController
-                                                  .forward();
-                                              prayerPlayer.play();
+                                              playPauseAnimationController.forward();
+                                              kIsWeb ? playPrayer() : prayerPlayer.play();
                                             } else {
-                                              playPauseAnimationController
-                                                  .reverse();
-                                              prayerPlayer.pause();
+                                              playPauseAnimationController.reverse();
+                                              kIsWeb ? pausePrayer() : prayerPlayer.pause();
                                             }
                                             setState(() {
-                                              prayerPlayerIsPaused =
-                                                  !prayerPlayerIsPaused;
+                                              prayerPlayerIsPaused = !prayerPlayerIsPaused;
                                             });
                                           }
                                         : null,
@@ -536,25 +498,21 @@ class PrayerViewState extends State<PrayerView>
                                 Expanded(
                                   flex: 3,
                                   child: Column(
-                                    children: <Widget>[
+                                    children: [
                                       RawMaterialButton(
                                         elevation: 0,
                                         child: Icon(
                                           CupertinoIcons.gobackward_10,
                                           size: 32.0,
-                                          color: (prayerAudioIsLoaded &&
-                                                  widget
-                                                      .prayer.audio.isNotEmpty)
+                                          color: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                               ? Colors.black
                                               : Theme.of(context).disabledColor,
                                         ),
                                         padding: EdgeInsets.all(16.0),
                                         shape: CircleBorder(),
-                                        onPressed: (prayerAudioIsLoaded &&
-                                                widget.prayer.audio.isNotEmpty)
+                                        onPressed: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                             ? () {
-                                                prayerPlayer.seekBy(
-                                                    Duration(seconds: -10));
+                                                kIsWeb ? seekPrayer(-10) : prayerPlayer.seekBy(Duration(seconds: -10));
                                               }
                                             : null,
                                       ),
@@ -562,28 +520,26 @@ class PrayerViewState extends State<PrayerView>
                                         elevation: 0,
                                         child: Icon(
                                           prayerPlayerIsMuted
-                                              ? CupertinoIcons
-                                                  .speaker_slash_fill
+                                              ? CupertinoIcons.speaker_slash_fill
                                               : CupertinoIcons.speaker_1_fill,
                                           size: 32.0,
-                                          color: (prayerAudioIsLoaded &&
-                                                  widget
-                                                      .prayer.audio.isNotEmpty)
+                                          color: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                               ? Colors.black
                                               : Theme.of(context).disabledColor,
                                         ),
                                         padding: EdgeInsets.all(16.0),
                                         shape: CircleBorder(),
-                                        onPressed: (prayerAudioIsLoaded &&
-                                                widget.prayer.audio.isNotEmpty)
+                                        onPressed: (prayerAudioIsLoaded && widget.prayer.audio.isNotEmpty)
                                             ? () {
                                                 prayerPlayerIsMuted
-                                                    ? prayerPlayer
-                                                        .setVolume(100)
-                                                    : prayerPlayer.setVolume(0);
+                                                    ? kIsWeb
+                                                        ? setPrayerVolume(1)
+                                                        : prayerPlayer.setVolume(1)
+                                                    : kIsWeb
+                                                        ? setPrayerVolume(0)
+                                                        : prayerPlayer.setVolume(0);
                                                 setState(() {
-                                                  prayerPlayerIsMuted =
-                                                      !prayerPlayerIsMuted;
+                                                  prayerPlayerIsMuted = !prayerPlayerIsMuted;
                                                 });
                                               }
                                             : null,
@@ -594,7 +550,7 @@ class PrayerViewState extends State<PrayerView>
                                 Expanded(
                                   flex: 3,
                                   child: Column(
-                                    children: <Widget>[
+                                    children: [
                                       RawMaterialButton(
                                         elevation: 0,
                                         child: Icon(
