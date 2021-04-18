@@ -6,9 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:preload_page_view/preload_page_view.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:easy_dynamic_theme/easy_dynamic_theme.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-// import 'package:radioramezan/splash.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:radioramezan/splash.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/side_drawer.dart';
 import 'package:radioramezan/nav_bar.dart';
@@ -23,12 +24,14 @@ import 'package:radioramezan/theme.dart';
 
 Future<Null> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) await FlutterDownloader.initialize();
   await Settings.init(
     cacheProvider: SharePreferenceCache(),
   );
-  await globals.init();
   runApp(
-    RadioRamezanApp(),
+    EasyDynamicThemeWidget(
+      child: RadioRamezanApp(),
+    ),
   );
 }
 
@@ -42,33 +45,44 @@ class RadioRamezanApp extends StatelessWidget {
     );
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        statusBarColor: Settings.getValue<bool>("darkThemeEnabled", false)
-            ? Color.fromRGBO(50, 50, 50, 1)
-            : RadioRamezanColors.ramady,
+        statusBarColor:
+            Settings.getValue<bool>("darkThemeEnabled", false) ? RadioRamezanColors.darky : RadioRamezanColors.ramady,
       ),
     );
-    return DynamicTheme(
-      defaultBrightness: Settings.getValue<bool>("darkThemeEnabled", false)
-          ? Brightness.dark
-          : Brightness.light,
-      data: (brightness) => Settings.getValue<bool>("darkThemeEnabled", false)
-          ? darkTheme
-          : lightTheme,
-      themedWidgetBuilder: (context, theme) {
-        return MaterialApp(
-          title: 'رادیو رمضان',
-          theme: theme,
-          home: Main(),
-          localizationsDelegates: [
-            GlobalCupertinoLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-          ],
-          supportedLocales: [
-            Locale('fa', 'IR'),
-          ],
-          locale: Locale('fa', 'IR'),
-        );
+    return FutureBuilder(
+      future: globals.init(),
+      builder: (context, AsyncSnapshot snapshot) {
+        return snapshot.connectionState == ConnectionState.waiting
+            ? MaterialApp(
+                title: 'رادیو رمضان',
+                theme: Settings.getValue<bool>("darkThemeEnabled", false) ? darkTheme : lightTheme,
+                themeMode: EasyDynamicTheme.of(context).themeMode,
+                home: Splash(),
+                localizationsDelegates: [
+                  GlobalCupertinoLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                ],
+                supportedLocales: [
+                  Locale('fa', 'IR'),
+                ],
+                locale: Locale('fa', 'IR'),
+              )
+            : MaterialApp(
+                title: 'رادیو رمضان',
+                theme: Settings.getValue<bool>("darkThemeEnabled", false) ? darkTheme : lightTheme,
+                themeMode: EasyDynamicTheme.of(context).themeMode,
+                home: Main(),
+                localizationsDelegates: [
+                  GlobalCupertinoLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                ],
+                supportedLocales: [
+                  Locale('fa', 'IR'),
+                ],
+                locale: Locale('fa', 'IR'),
+              );
       },
     );
   }
@@ -101,24 +115,14 @@ class MainState extends State<Main> {
     return SafeArea(
         top: false,
         child: Container(
-          margin: kIsWeb &&
-                  MediaQuery.of(context).orientation == Orientation.landscape
-              ? EdgeInsets.symmetric(
-                  horizontal: (MediaQuery.of(context).size.width -
-                          MediaQuery.of(context).size.height /
-                              globals.webAspectRatio) /
-                      2)
-              : null,
-          // decoration: BoxDecoration(
-          //   boxShadow: [
-          //     BoxShadow(
-          //       color: Colors.grey.withOpacity(0.5),
-          //       spreadRadius: 5,
-          //       blurRadius: 10,
-          //       offset: Offset(0, 0),
-          //     ),
-          //   ],
-          // ),
+          color: Colors.white,
+          margin:
+              kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+                  ? EdgeInsets.symmetric(
+                      horizontal: (MediaQuery.of(context).size.width -
+                              MediaQuery.of(context).size.height / globals.webAspectRatio) /
+                          2)
+                  : null,
           child: ClipRRect(
             child: Scaffold(
               key: globals.mainScaffoldKey,
@@ -135,7 +139,7 @@ class MainState extends State<Main> {
                       globals.navigatorIndex = index;
                     });
                   },
-                  children: <Widget>[
+                  children: [
                     Qibla(),
                     Conductor(),
                     HomePage(),
@@ -146,7 +150,7 @@ class MainState extends State<Main> {
               ),
               bottomNavigationBar: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
+                children: [
                   RadioBar(),
                   NavBar(),
                   Advertisements(),
