@@ -22,14 +22,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Always and when in use!</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Can I have location always?</string>
-	<key>NSLocationUsageDescription</key>
-	<string>Older devices need location.</string>
+	<string>Need user location to show the Kabaa direction on the map for doing islamic prayers</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Need location when in use</string>
+	<string>Need user location to show the Kabaa direction on the map for doing islamic prayers</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Need user location to show the Kabaa direction on the map for doing islamic prayers</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -48,13 +46,12 @@
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+	<key>FDAllFilesDownloadedMessage</key>
+	<string>All files have been downloaded</string>
 </dict>
 </plist>
