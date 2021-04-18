@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/about_us.dart';
@@ -28,7 +28,7 @@ class SideDrawer extends StatelessWidget {
         ),
         child: ListView(
           padding: EdgeInsets.zero,
-          children: <Widget>[
+          children: [
             DrawerHeader(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -47,8 +47,7 @@ class SideDrawer extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child:
-                    Image.asset('images/logo_white_transparent_background.png'),
+                child: Image.asset('images/logo_white_transparent_background.png'),
               ),
             ),
             ListTile(
