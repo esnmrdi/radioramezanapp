@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:easy_dynamic_theme/easy_dynamic_theme.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/theme.dart';
 
@@ -16,12 +18,122 @@ class AppSettings extends StatefulWidget {
 class AppSettingsState extends State<AppSettings> {
   GlobalKey<ScaffoldState> appSettingsScaffoldKey;
   ScrollController scrollController;
+  Workmanager workmanager;
   Map<int, String> cityMap;
+
+  void callbackDispatcher() {
+    workmanager.executeTask((task, inputData) async {
+      if (task == 'autoStartSobhTask' || task == 'autoStartZohrTask' || task == 'autoStartMaghrebTask') {
+        if (globals.radioPlayerIsPaused) {
+          globals.radioPlayer.play();
+          globals.playPauseAnimationController.forward();
+          globals.radioPlayerIsPaused = false;
+        }
+      } else {
+        if (!globals.radioPlayerIsPaused) {
+          globals.radioPlayer.stop();
+          globals.playPauseAnimationController.reverse();
+          globals.radioPlayerIsPaused = true;
+        }
+      }
+      return Future.value(true);
+    });
+  }
+
+  void setAutoStartStopTimers() async {
+    await workmanager.cancelAll();
+    if (Settings.getValue<bool>('autoStartStopEnabled', false)) {
+      workmanager.initialize(
+        callbackDispatcher,
+        isInDebugMode: true,
+      );
+      if (Settings.getValue<bool>('autoStartStopSobhEnabled', false)) {
+        DateTime sobh =
+            DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + globals.owghat.sobh);
+        Duration nowToStartSobhDiff =
+            sobh.subtract(Duration(minutes: Settings.getValue<double>('autoStartDuration', 30).truncate())).difference(
+                  DateTime.now(),
+                );
+        if (nowToStartSobhDiff > Duration.zero) {
+          workmanager.registerOneOffTask(
+            "1",
+            'autoStartSobhTask',
+            initialDelay: nowToStartSobhDiff,
+          );
+        }
+        Duration nowToStopSobhDiff =
+            sobh.add(Duration(minutes: Settings.getValue<double>('autoStopDuration', 30).truncate())).difference(
+                  DateTime.now(),
+                );
+        if (nowToStopSobhDiff > Duration.zero) {
+          workmanager.registerOneOffTask(
+            "2",
+            'autoStopSobhTask',
+            initialDelay: nowToStopSobhDiff,
+          );
+        }
+      }
+      if (Settings.getValue<bool>('autoStartStopZohrEnabled', false)) {
+        DateTime zohr =
+            DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + globals.owghat.zohr);
+        Duration nowToStartZohrDiff =
+            zohr.subtract(Duration(minutes: Settings.getValue<double>('autoStartDuration', 30).truncate())).difference(
+                  DateTime.now(),
+                );
+        if (nowToStartZohrDiff > Duration.zero) {
+          workmanager.registerOneOffTask(
+            "3",
+            'autoStartZohrTask',
+            initialDelay: nowToStartZohrDiff,
+          );
+        }
+        Duration nowToStopZohrDiff =
+            zohr.add(Duration(minutes: Settings.getValue<double>('autoStopDuration', 30).truncate())).difference(
+                  DateTime.now(),
+                );
+        if (nowToStopZohrDiff > Duration.zero) {
+          workmanager.registerOneOffTask(
+            "4",
+            'autoStopZohrTask',
+            initialDelay: nowToStopZohrDiff,
+          );
+        }
+      }
+      if (Settings.getValue<bool>('autoStartStopMaghrebEnabled', false)) {
+        DateTime maghreb =
+            DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + globals.owghat.maghreb);
+        Duration nowToStartMaghrebDiff = maghreb
+            .subtract(Duration(minutes: Settings.getValue<double>('autoStartDuration', 30).truncate()))
+            .difference(
+              DateTime.now(),
+            );
+        if (nowToStartMaghrebDiff > Duration.zero) {
+          workmanager.registerOneOffTask(
+            "5",
+            'autoStartMaghrebTask',
+            initialDelay: nowToStartMaghrebDiff,
+          );
+        }
+        Duration nowToStopMaghrebDiff =
+            maghreb.add(Duration(minutes: Settings.getValue<double>('autoStopDuration', 30).truncate())).difference(
+                  DateTime.now(),
+                );
+        if (nowToStopMaghrebDiff > Duration.zero) {
+          workmanager.registerOneOffTask(
+            "6",
+            'autoStopMaghrebTask',
+            initialDelay: nowToStopMaghrebDiff,
+          );
+        }
+      }
+    }
+  }
 
   @override
   void initState() {
     appSettingsScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
+    workmanager = Workmanager();
     cityMap = Map.fromIterable(
       globals.cityList,
       key: (city) => city.cityId,
@@ -40,6 +152,7 @@ class AppSettingsState extends State<AppSettings> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: appSettingsScaffoldKey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         centerTitle: true,
         title: Text(
@@ -55,9 +168,6 @@ class AppSettingsState extends State<AppSettings> {
         brightness: Brightness.dark,
       ),
       body: Container(
-        color: Settings.getValue<bool>("darkThemeEnabled", false)
-            ? Color.fromRGBO(50, 50, 50, .5)
-            : Theme.of(context).primaryColor.withOpacity(.1),
         child: DraggableScrollbar.semicircle(
           controller: scrollController,
           child: ListView.builder(
@@ -66,10 +176,11 @@ class AppSettingsState extends State<AppSettings> {
             itemCount: 1,
             itemBuilder: (context, index) {
               return Column(
-                children: <Widget>[
+                children: [
                   SettingsGroup(
                     title: 'نمایش',
-                    children: <Widget>[
+                    subtitle: null,
+                    children: [
                       SwitchSettingsTile(
                         settingKey: 'darkThemeEnabled',
                         title: 'تغییر پوسته',
@@ -81,14 +192,10 @@ class AppSettingsState extends State<AppSettings> {
                           Future.delayed(Duration(milliseconds: 250), () {
                             SystemChrome.setSystemUIOverlayStyle(
                               SystemUiOverlayStyle(
-                                statusBarColor: value
-                                    ? Color.fromRGBO(50, 50, 50, 1)
-                                    : RadioRamezanColors.ramady,
+                                statusBarColor: value ? RadioRamezanColors.darky : RadioRamezanColors.ramady,
                               ),
                             );
-                            DynamicTheme.of(context).setBrightness(
-                              value ? Brightness.dark : Brightness.light,
-                            );
+                            EasyDynamicTheme.of(context).changeTheme();
                           });
                         },
                       ),
@@ -96,7 +203,8 @@ class AppSettingsState extends State<AppSettings> {
                   ),
                   SettingsGroup(
                     title: 'عملکرد',
-                    children: <Widget>[
+                    subtitle: null,
+                    children: [
                       RadioModalSettingsTile<int>(
                         title: 'انتخاب کشور و شهر',
                         settingKey: 'cityId',
@@ -104,21 +212,6 @@ class AppSettingsState extends State<AppSettings> {
                         selected: 3,
                         onChange: (value) {
                           globals.cityChangeUpdate();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'تغییرات مربوط به شهر جدید اعمال شدند.',
-                                style: TextStyle(fontFamily: 'Sans'),
-                              ),
-                              duration: Duration(seconds: 5),
-                              behavior: SnackBarBehavior.floating,
-                              action: SnackBarAction(
-                                textColor: RadioRamezanColors.goldy,
-                                label: 'باشه!',
-                                onPressed: () {},
-                              ),
-                            ),
-                          );
                         },
                       ),
                       RadioModalSettingsTile<int>(
@@ -152,40 +245,26 @@ class AppSettingsState extends State<AppSettings> {
                   ),
                   SettingsGroup(
                     title: 'زمان بندی',
-                    children: <Widget>[
+                    subtitle: null,
+                    children: [
                       SwitchSettingsTile(
                         settingKey: 'autoStartStopEnabled',
                         title: 'پخش و خاموشی خودکار',
                         subtitle: 'گوش دادن به رادیو پیرامون وقت اذان',
+                        enabled: false,
                         enabledLabel: 'فعال',
                         disabledLabel: 'غیرفعال',
                         leading: Icon(CupertinoIcons.alarm),
                         onChange: (value) {
-                          globals.setAutoStartStopTimers();
-                          if (value)
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'برای استفاده از این آپشن، اپلیکیشن نباید به طور کامل بسته شود.',
-                                  style: TextStyle(fontFamily: 'Sans'),
-                                ),
-                                duration: Duration(seconds: 5),
-                                behavior: SnackBarBehavior.floating,
-                                action: SnackBarAction(
-                                  textColor: RadioRamezanColors.goldy,
-                                  label: 'باشه!',
-                                  onPressed: () {},
-                                ),
-                              ),
-                            );
+                          setAutoStartStopTimers();
                         },
-                        childrenIfEnabled: <Widget>[
+                        childrenIfEnabled: [
                           CheckboxSettingsTile(
                             leading: Icon(CupertinoIcons.sunrise),
                             settingKey: 'autoStartStopSobhEnabled',
                             title: 'اذان صبح',
                             onChange: (value) {
-                              globals.setAutoStartStopTimers();
+                              setAutoStartStopTimers();
                             },
                           ),
                           CheckboxSettingsTile(
@@ -193,7 +272,7 @@ class AppSettingsState extends State<AppSettings> {
                             settingKey: 'autoStartStopZohrEnabled',
                             title: 'اذان ظهر',
                             onChange: (value) {
-                              globals.setAutoStartStopTimers();
+                              setAutoStartStopTimers();
                             },
                           ),
                           CheckboxSettingsTile(
@@ -201,7 +280,7 @@ class AppSettingsState extends State<AppSettings> {
                             settingKey: 'autoStartStopMaghrebEnabled',
                             title: 'اذان مغرب',
                             onChange: (value) {
-                              globals.setAutoStartStopTimers();
+                              setAutoStartStopTimers();
                             },
                           ),
                           SliderSettingsTile(
@@ -213,7 +292,7 @@ class AppSettingsState extends State<AppSettings> {
                             step: 10,
                             leading: Icon(CupertinoIcons.hourglass),
                             onChangeEnd: (value) {
-                              globals.setAutoStartStopTimers();
+                              setAutoStartStopTimers();
                             },
                           ),
                           SliderSettingsTile(
@@ -225,7 +304,7 @@ class AppSettingsState extends State<AppSettings> {
                             step: 10,
                             leading: Icon(CupertinoIcons.hourglass),
                             onChangeEnd: (value) {
-                              globals.setAutoStartStopTimers();
+                              setAutoStartStopTimers();
                             },
                           ),
                         ],

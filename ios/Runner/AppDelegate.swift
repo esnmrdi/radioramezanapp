@@ -10,8 +10,9 @@ import flutter_downloader
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GMSServices.provideAPIKey("AIzaSyBYyiUJS-kigrK1fePgi4yOfPIZT9QDIeg")
+    UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60*1))
     GeneratedPluginRegistrant.register(with: self)
-   FlutterDownloaderPlugin.setPluginRegistrantCallback(registerPlugins)
+    FlutterDownloaderPlugin.setPluginRegistrantCallback(registerPlugins)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
