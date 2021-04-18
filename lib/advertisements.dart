@@ -8,11 +8,10 @@ class Advertisements extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
-          ? (MediaQuery.of(context).size.height / globals.webAspectRatio) /
-              globals.adAspectRatio
+      height: kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+          ? (MediaQuery.of(context).size.height / globals.webAspectRatio) / globals.adAspectRatio
           : MediaQuery.of(context).size.width / globals.adAspectRatio,
-      width: kIsWeb && MediaQuery.of(context).orientation == Orientation.landscape
+      width: kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
           ? (MediaQuery.of(context).size.height / globals.webAspectRatio)
           : MediaQuery.of(context).size.width,
       margin: EdgeInsets.zero,
@@ -38,14 +37,12 @@ class Advertisements extends StatelessWidget {
                 child: Image.network(
                   ad.banner,
                   fit: BoxFit.cover,
-                  loadingBuilder: (BuildContext context, Widget child,
-                      ImageChunkEvent loadingProgress) {
+                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Center(
                       child: CircularProgressIndicator(
                         value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes
+                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes
                             : null,
                       ),
                     );
