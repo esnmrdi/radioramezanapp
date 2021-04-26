@@ -19,11 +19,12 @@ class AppSettingsState extends State<AppSettings> {
   GlobalKey<ScaffoldState> appSettingsScaffoldKey;
   ScrollController scrollController;
   Workmanager workmanager;
+  List<String> autoStartStopTasks;
   Map<int, String> cityMap;
 
   void callbackDispatcher() {
     workmanager.executeTask((task, inputData) async {
-      if (task == 'autoStartSobhTask' || task == 'autoStartZohrTask' || task == 'autoStartMaghrebTask') {
+      if (task.contains('start')) {
         if (globals.radioPlayerIsPaused) {
           globals.radioPlayer.play();
           globals.playPauseAnimationController.forward();
@@ -40,92 +41,40 @@ class AppSettingsState extends State<AppSettings> {
     });
   }
 
-  void setAutoStartStopTimers() async {
+  void setAutoStartStopTasks() async {
     await workmanager.cancelAll();
     if (Settings.getValue<bool>('autoStartStopEnabled', false)) {
       workmanager.initialize(
         callbackDispatcher,
-        isInDebugMode: true,
       );
-      if (Settings.getValue<bool>('autoStartStopSobhEnabled', false)) {
-        DateTime sobh =
-            DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + globals.owghat.sobh);
-        Duration nowToStartSobhDiff =
-            sobh.subtract(Duration(minutes: Settings.getValue<double>('autoStartDuration', 30).truncate())).difference(
+      autoStartStopTasks.forEach((element) {
+        DateTime event = DateTime.parse(
+            intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + globals.owghat.toMap()[element]);
+        Duration nowToStartEventDiff =
+            event.subtract(Duration(minutes: Settings.getValue<double>('autoStartDuration', 30).truncate())).difference(
                   DateTime.now(),
                 );
-        if (nowToStartSobhDiff > Duration.zero) {
-          workmanager.registerOneOffTask(
-            "1",
-            'autoStartSobhTask',
-            initialDelay: nowToStartSobhDiff,
-          );
-        }
-        Duration nowToStopSobhDiff =
-            sobh.add(Duration(minutes: Settings.getValue<double>('autoStopDuration', 30).truncate())).difference(
+        Duration nowToStopEventDiff =
+            event.add(Duration(minutes: Settings.getValue<double>('autoStopDuration', 30).truncate())).difference(
                   DateTime.now(),
                 );
-        if (nowToStopSobhDiff > Duration.zero) {
-          workmanager.registerOneOffTask(
-            "2",
-            'autoStopSobhTask',
-            initialDelay: nowToStopSobhDiff,
-          );
-        }
-      }
-      if (Settings.getValue<bool>('autoStartStopZohrEnabled', false)) {
-        DateTime zohr =
-            DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + globals.owghat.zohr);
-        Duration nowToStartZohrDiff =
-            zohr.subtract(Duration(minutes: Settings.getValue<double>('autoStartDuration', 30).truncate())).difference(
-                  DateTime.now(),
-                );
-        if (nowToStartZohrDiff > Duration.zero) {
-          workmanager.registerOneOffTask(
-            "3",
-            'autoStartZohrTask',
-            initialDelay: nowToStartZohrDiff,
-          );
-        }
-        Duration nowToStopZohrDiff =
-            zohr.add(Duration(minutes: Settings.getValue<double>('autoStopDuration', 30).truncate())).difference(
-                  DateTime.now(),
-                );
-        if (nowToStopZohrDiff > Duration.zero) {
-          workmanager.registerOneOffTask(
-            "4",
-            'autoStopZohrTask',
-            initialDelay: nowToStopZohrDiff,
-          );
-        }
-      }
-      if (Settings.getValue<bool>('autoStartStopMaghrebEnabled', false)) {
-        DateTime maghreb =
-            DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + globals.owghat.maghreb);
-        Duration nowToStartMaghrebDiff = maghreb
-            .subtract(Duration(minutes: Settings.getValue<double>('autoStartDuration', 30).truncate()))
-            .difference(
-              DateTime.now(),
+        if (Settings.getValue<bool>('autoStartStop' + element + 'Enabled', false)) {
+          if (nowToStartEventDiff > Duration.zero) {
+            workmanager.registerOneOffTask(
+              'autoStart' + element + 'Task',
+              'autoStart' + element + 'Task',
+              initialDelay: nowToStartEventDiff,
             );
-        if (nowToStartMaghrebDiff > Duration.zero) {
-          workmanager.registerOneOffTask(
-            "5",
-            'autoStartMaghrebTask',
-            initialDelay: nowToStartMaghrebDiff,
-          );
+          }
+          if (nowToStopEventDiff > Duration.zero) {
+            workmanager.registerOneOffTask(
+              'autoStop' + element + 'Task',
+              'autoStop' + element + 'Task',
+              initialDelay: nowToStopEventDiff,
+            );
+          }
         }
-        Duration nowToStopMaghrebDiff =
-            maghreb.add(Duration(minutes: Settings.getValue<double>('autoStopDuration', 30).truncate())).difference(
-                  DateTime.now(),
-                );
-        if (nowToStopMaghrebDiff > Duration.zero) {
-          workmanager.registerOneOffTask(
-            "6",
-            'autoStopMaghrebTask',
-            initialDelay: nowToStopMaghrebDiff,
-          );
-        }
-      }
+      });
     }
   }
 
@@ -134,6 +83,7 @@ class AppSettingsState extends State<AppSettings> {
     appSettingsScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
     workmanager = Workmanager();
+    autoStartStopTasks = ['sobh', 'zohr', 'maghreb'];
     cityMap = Map.fromIterable(
       globals.cityList,
       key: (city) => city.cityId,
@@ -256,7 +206,7 @@ class AppSettingsState extends State<AppSettings> {
                         disabledLabel: 'غیرفعال',
                         leading: Icon(CupertinoIcons.alarm),
                         onChange: (value) {
-                          setAutoStartStopTimers();
+                          setAutoStartStopTasks();
                         },
                         childrenIfEnabled: [
                           CheckboxSettingsTile(
@@ -264,7 +214,7 @@ class AppSettingsState extends State<AppSettings> {
                             settingKey: 'autoStartStopSobhEnabled',
                             title: 'اذان صبح',
                             onChange: (value) {
-                              setAutoStartStopTimers();
+                              setAutoStartStopTasks();
                             },
                           ),
                           CheckboxSettingsTile(
@@ -272,7 +222,7 @@ class AppSettingsState extends State<AppSettings> {
                             settingKey: 'autoStartStopZohrEnabled',
                             title: 'اذان ظهر',
                             onChange: (value) {
-                              setAutoStartStopTimers();
+                              setAutoStartStopTasks();
                             },
                           ),
                           CheckboxSettingsTile(
@@ -280,7 +230,7 @@ class AppSettingsState extends State<AppSettings> {
                             settingKey: 'autoStartStopMaghrebEnabled',
                             title: 'اذان مغرب',
                             onChange: (value) {
-                              setAutoStartStopTimers();
+                              setAutoStartStopTasks();
                             },
                           ),
                           SliderSettingsTile(
@@ -292,7 +242,7 @@ class AppSettingsState extends State<AppSettings> {
                             step: 10,
                             leading: Icon(CupertinoIcons.hourglass),
                             onChangeEnd: (value) {
-                              setAutoStartStopTimers();
+                              setAutoStartStopTasks();
                             },
                           ),
                           SliderSettingsTile(
@@ -304,7 +254,7 @@ class AppSettingsState extends State<AppSettings> {
                             step: 10,
                             leading: Icon(CupertinoIcons.hourglass),
                             onChangeEnd: (value) {
-                              setAutoStartStopTimers();
+                              setAutoStartStopTasks();
                             },
                           ),
                         ],
