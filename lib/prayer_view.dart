@@ -87,6 +87,15 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
     return js.context.callMethod('prayerDuration');
   }
 
+  Iterable<E> mapIndexed<E, T>(Iterable<T> items, E Function(int index, T item) f) sync* {
+    var index = 0;
+
+    for (final item in items) {
+      yield f(index, item);
+      index = index + 1;
+    }
+  }
+
   @override
   void initState() {
     prayerViewScaffoldKey = GlobalKey<ScaffoldState>();
@@ -101,10 +110,10 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
     sliderIsChanging = false;
     sliderSelectiveValue = 0;
     sliderProgressiveValue = 0;
-    path = 'audios/' + (widget.prayer.audio.isNotEmpty ? widget.prayer.audio : 'azan_alert_2.mp3');
+    path = 'audios/' + (widget.prayer.audio.isNotEmpty ? widget.prayer.audio : 'azan_alert_two.mp3');
     metas = Metas(
       title: widget.prayer.title,
-      artist: widget.prayer.reciter,
+      artist: widget.prayer.subtitle,
       album: 'رادیو رمضان',
     );
     loadPrayer();
@@ -186,14 +195,17 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            widget.prayer.title,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          Flexible(
+                            child: Text(
+                              widget.prayer.title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
+                          SizedBox(width: 10),
                           FloatingActionButton(
                             elevation: 2,
                             backgroundColor: Colors.white,
@@ -221,8 +233,9 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
                       itemCount: 1,
                       itemBuilder: (context, index) {
                         return Column(
-                          children: widget.prayer.verses.map(
-                            (verse) {
+                          children: mapIndexed(
+                            widget.prayer.verses,
+                            (index, verse) {
                               return Container(
                                 child: Column(
                                   children: [
@@ -230,10 +243,11 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
                                         ? Text(
                                             verse.arabic,
                                             style: TextStyle(
-                                              fontFamily: 'tahrir',
+                                              fontFamily: 'Tahrir',
                                               fontSize: fontSize,
+                                              fontWeight: verse.farsi == '' ? FontWeight.bold : null,
                                               height: 1.5,
-                                              color: Colors.black,
+                                              color: Theme.of(context).accentColor,
                                             ),
                                             textAlign: TextAlign.center,
                                           )
@@ -245,15 +259,28 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
                                         : SizedBox(),
                                     showTranslation
                                         ? verse.farsi != ''
-                                            ? Text(
-                                                verse.farsi,
-                                                style: TextStyle(
-                                                  fontFamily: 'tahrir',
-                                                  fontSize: fontSize,
-                                                  height: 1.5,
-                                                  color: Theme.of(context).primaryColor,
+                                            ? Container(
+                                                decoration: BoxDecoration(
+                                                  color: verse.arabic == ''
+                                                      ? Theme.of(context).scaffoldBackgroundColor
+                                                      : null,
+                                                  borderRadius: BorderRadius.circular(5),
                                                 ),
-                                                textAlign: TextAlign.center,
+                                                width: verse.arabic == '' ? MediaQuery.of(context).size.width : null,
+                                                padding: verse.arabic == ''
+                                                    ? EdgeInsets.symmetric(vertical: 10, horizontal: 20)
+                                                    : null,
+                                                child: Text(
+                                                  verse.farsi,
+                                                  style: TextStyle(
+                                                    fontFamily: 'Sans',
+                                                    fontSize: fontSize * .65,
+                                                    fontWeight: verse.arabic == '' ? FontWeight.bold : null,
+                                                    height: 1.5,
+                                                    color: Colors.black54,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
                                               )
                                             : SizedBox()
                                         : SizedBox(),
@@ -263,6 +290,11 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
                                                 height: 10,
                                               )
                                             : SizedBox()
+                                        : SizedBox(),
+                                    index != widget.prayer.verses.length - 1
+                                        ? SizedBox(
+                                            height: 20,
+                                          )
                                         : SizedBox(),
                                   ],
                                 ),
@@ -430,7 +462,7 @@ class PrayerViewState extends State<PrayerView> with SingleTickerProviderStateMi
                                       RawMaterialButton(
                                         elevation: 0,
                                         child: Icon(
-                                          CupertinoIcons.arrow_down_to_line_alt,
+                                          CupertinoIcons.person_alt_circle,
                                           size: 32.0,
                                           color: Theme.of(context).disabledColor,
                                         ),
