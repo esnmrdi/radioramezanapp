@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/prayer_view.dart';
 import 'package:radioramezan/data_models/prayer_model.dart';
@@ -14,13 +13,21 @@ class Prayers extends StatefulWidget {
   PrayersState createState() => PrayersState();
 }
 
-class PrayersState extends State<Prayers> {
+class PrayersState extends State<Prayers> with TickerProviderStateMixin {
   GlobalKey<ScaffoldState> prayersScaffoldKey;
+  TabController tabController;
   ScrollController scrollController;
   List<Prayer> searchResult = [];
   TextEditingController searchController;
   bool isSearching;
   Timer checkStoppedTyping;
+  int selectedTabIndex;
+  Map<int, String> searchHint = {
+    0: 'سوره',
+    1: 'دعا',
+    2: 'خطبه، نامه و حکمت',
+    3: 'دعا',
+  };
 
   void onChangeQueryHandler(String text) {
     const duration = Duration(milliseconds: 800);
@@ -36,8 +43,8 @@ class PrayersState extends State<Prayers> {
       setState(() {});
       return;
     }
-    globals.prayerList.forEach((prayer) {
-      if (prayer.title.contains(text) || prayer.reciter.contains(text)) searchResult.add(prayer);
+    globals.sources[globals.sources.keys.toList()[selectedTabIndex]].forEach((prayer) {
+      if (prayer.title.contains(text)) searchResult.add(prayer);
     });
     setState(() {});
     if (searchResult.isEmpty) {
@@ -63,8 +70,10 @@ class PrayersState extends State<Prayers> {
   void initState() {
     prayersScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
+    tabController = TabController(length: globals.sources.length, vsync: this);
     searchController = TextEditingController();
     isSearching = false;
+    selectedTabIndex = 0;
     super.initState();
   }
 
@@ -87,7 +96,7 @@ class PrayersState extends State<Prayers> {
                 controller: searchController,
                 autofocus: true,
                 decoration: InputDecoration(
-                  hintText: "جستجوی عنوان یا قاری",
+                  hintText: "جستجوی " + searchHint[selectedTabIndex],
                   hintStyle: TextStyle(
                     color: Colors.white30,
                   ),
@@ -116,7 +125,7 @@ class PrayersState extends State<Prayers> {
           isSearching
               ? IconButton(
                   icon: Icon(
-                    CupertinoIcons.arrow_left,
+                    CupertinoIcons.xmark,
                     color: Colors.white,
                   ),
                   onPressed: () {
@@ -137,69 +146,95 @@ class PrayersState extends State<Prayers> {
                   },
                 ),
         ],
+        bottom: TabBar(
+            controller: tabController,
+            isScrollable: true,
+            onTap: (tabIndex) {
+              setState(() {
+                searchController.clear();
+                searchResult.clear();
+                selectedTabIndex = tabIndex;
+              });
+            },
+            tabs: List<Widget>.generate(globals.sources.length, (int index) {
+              return Tab(text: globals.sources.keys.toList()[index]);
+            })),
         brightness: Brightness.dark,
       ),
-      body: Container(
-        child: DraggableScrollbar.semicircle(
-          controller: scrollController,
-          child: ListView.builder(
-            controller: scrollController,
-            padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-            itemCount: isSearching && searchResult.isNotEmpty ? searchResult.length : globals.prayerList.length,
-            itemBuilder: (context, index) {
-              Prayer prayer = isSearching && searchResult.isNotEmpty ? searchResult[index] : globals.prayerList[index];
-              return Column(
-                children: [
-                  Card(
-                    elevation: 2,
-                    margin: EdgeInsets.zero,
-                    color: Colors.white,
-                    shadowColor: Colors.black.withOpacity(.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        Future.delayed(
-                          Duration(milliseconds: 250),
-                          () {
-                            Navigator.of(context).push(
-                              globals.createRoute(PrayerView(prayer: prayer)),
-                            );
-                          },
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(5),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: prayer.reciter != '' ? 2 : 10,
-                          horizontal: 10,
-                        ),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(5),
-                          child: Image.asset('images/poster_' + prayer.category + '_prayers.jpg'),
-                        ),
-                        title: Text(
-                          prayer.title,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: prayer.reciter != ''
-                            ? Text(
-                                prayer.reciter,
+      body: TabBarView(
+        controller: tabController,
+        children: List<Widget>.generate(
+          globals.sources.length,
+          (int sourceIndex) {
+            return Container(
+              child: DraggableScrollbar.semicircle(
+                controller: scrollController,
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                  itemCount: isSearching && searchResult.isNotEmpty
+                      ? searchResult.length
+                      : globals.sources[globals.sources.keys.toList()[sourceIndex]].length,
+                  itemBuilder: (context, index) {
+                    Prayer prayer = isSearching && searchResult.isNotEmpty
+                        ? searchResult[index]
+                        : globals.sources[globals.sources.keys.toList()[sourceIndex]][index];
+                    return Column(
+                      children: [
+                        Card(
+                          elevation: 2,
+                          margin: EdgeInsets.zero,
+                          color: Colors.white,
+                          shadowColor: Colors.black.withOpacity(.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              Future.delayed(
+                                Duration(milliseconds: 250),
+                                () {
+                                  Navigator.of(context).push(
+                                    globals.createRoute(PrayerView(prayer: prayer)),
+                                  );
+                                },
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(5),
+                            child: ListTile(
+                              // isThreeLine: prayer.subtitle != '' ? true : false,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: prayer.subtitle != '' ? 2 : 10,
+                                horizontal: 10,
+                              ),
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: Image.asset('images/poster_' + prayer.category + '_prayers.jpg'),
+                              ),
+                              title: Text(
+                                prayer.title,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.black54,
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                ],
-              );
-            },
-          ),
+                              ),
+                              subtitle: prayer.subtitle != ''
+                                  ? Text(
+                                      prayer.subtitle,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.black54,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
