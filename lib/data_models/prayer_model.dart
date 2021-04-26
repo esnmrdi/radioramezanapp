@@ -9,22 +9,22 @@ class Verse {
 
   factory Verse.fromJson(Map<String, dynamic> parsedJson) {
     return Verse(
-      arabic: parsedJson['arabic'],
-      farsi: parsedJson['farsi'],
+      arabic: parsedJson['ar'],
+      farsi: parsedJson['fa'],
     );
   }
 }
 
 class Prayer {
   final String title;
-  final String reciter;
+  final String subtitle;
   final String audio;
   String category;
   final List<Verse> verses;
 
   Prayer({
     this.title,
-    this.reciter,
+    this.subtitle,
     this.audio,
     this.category,
     this.verses,
@@ -35,7 +35,7 @@ class Prayer {
     List<Verse> _verses = list.map((i) => Verse.fromJson(i)).toList();
     return Prayer(
       title: parsedJson['title'],
-      reciter: parsedJson['reciter'],
+      subtitle: parsedJson['subtitle'],
       audio: parsedJson['audio'],
       category: parsedJson['category'],
       verses: _verses,
