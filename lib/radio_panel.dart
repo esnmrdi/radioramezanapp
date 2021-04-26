@@ -52,17 +52,20 @@ class RadioPanelState extends State<RadioPanel> with SingleTickerProviderStateMi
       );
       final message = Message()
         ..from = Address(emailController.text)
-        ..recipients.add('esn.mrd@gmail.com')
-        ..ccRecipients.add('abbas.soltanian@gmail.com')
+        ..recipients.add('radio.ramezan@gmail.com')
+        ..ccRecipients.add('esn.mrd@gmail.com')
         ..subject = 'نظر کاربران در مورد آیتم ها'
-        ..text = senderController.text +
-            '\n' +
+        ..html = "<html dir='rtl'><body><p><b>نام فرستنده: </b>" +
+            senderController.text +
+            "</p><p><b>ایمیل فرستنده: </b>" +
+            emailController.text +
+            "</p><p><b>آی دی مدیا: </b>" +
             globals.currentAndNextItem[0].mediaId.toString() +
-            '\n' +
+            "</p><p><b>عنوان آیتم: </b>" +
             globals.currentAndNextItem[0].title +
-            '\n' +
-            commentController.text;
-
+            "</p><p><b>متن نظر: </b>" +
+            commentController.text +
+            "</p></body></html>";
       try {
         await send(message, smtpServer);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -352,6 +355,7 @@ class RadioPanelState extends State<RadioPanel> with SingleTickerProviderStateMi
       child: ClipRRect(
         child: Scaffold(
           key: radioPanelScaffoldKey,
+          resizeToAvoidBottomInset: false,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Container(
             decoration: BoxDecoration(
@@ -483,24 +487,26 @@ class RadioPanelState extends State<RadioPanel> with SingleTickerProviderStateMi
                               },
                             ),
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: RawMaterialButton(
-                              elevation: 0,
-                              child: Icon(
-                                CupertinoIcons.arrow_down_to_line_alt,
-                                size: 32,
-                                color: Colors.white,
-                              ),
-                              padding: EdgeInsets.all(12),
-                              shape: CircleBorder(),
-                              onPressed: () {
-                                download(
-                                  globals.currentAndNextItem[0].address,
-                                );
-                              },
-                            ),
-                          ),
+                          kIsWeb || Platform.isAndroid
+                              ? Expanded(
+                                  flex: 1,
+                                  child: RawMaterialButton(
+                                    elevation: 0,
+                                    child: Icon(
+                                      CupertinoIcons.arrow_down_to_line_alt,
+                                      size: 32,
+                                      color: Colors.white,
+                                    ),
+                                    padding: EdgeInsets.all(12),
+                                    shape: CircleBorder(),
+                                    onPressed: () {
+                                      download(
+                                        globals.currentAndNextItem[0].address,
+                                      );
+                                    },
+                                  ),
+                                )
+                              : SizedBox(),
                           Expanded(
                             flex: 1,
                             child: RawMaterialButton(
