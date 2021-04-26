@@ -16,8 +16,6 @@ class SupportUs extends StatefulWidget {
 class SupportUsState extends State<SupportUs> {
   GlobalKey<ScaffoldState> supportUsScaffoldKey;
   ScrollController scrollController;
-  String paypalURL;
-  String paypingURL;
 
   Future<String> loadTextAsset(String url) async {
     return await rootBundle.loadString(url);
@@ -27,8 +25,6 @@ class SupportUsState extends State<SupportUs> {
   void initState() {
     supportUsScaffoldKey = GlobalKey<ScaffoldState>();
     scrollController = ScrollController();
-    paypalURL = 'https://www.paypal.com/paypalme2/RadioRamezan';
-    paypingURL = 'https://www.payping.ir/@radioramezan';
     super.initState();
   }
 
@@ -90,9 +86,9 @@ class SupportUsState extends State<SupportUs> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
-                                  'حمایت مالی',
+                                  'حمایت از رادیو',
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -119,7 +115,7 @@ class SupportUsState extends State<SupportUs> {
                           controller: scrollController,
                           child: ListView.builder(
                             controller: scrollController,
-                            padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            padding: EdgeInsets.all(20),
                             itemCount: 1,
                             itemBuilder: (context, index) {
                               return Column(
@@ -136,14 +132,15 @@ class SupportUsState extends State<SupportUs> {
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(5),
                                           ),
-                                          color: Colors.white,
+                                          color: Theme.of(context).primaryColor,
                                           onPressed: () {
-                                            globals.launchURL(paypalURL);
+                                            globals.launchURL('https://www.radioramezan.com/arzi.php');
                                           },
                                           child: Container(
                                             padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-                                            child: Image.asset(
-                                              'images/paypal.png',
+                                            child: Text(
+                                              'حمایت ارزی',
+                                              style: TextStyle(color: Colors.white),
                                             ),
                                           ),
                                         ),
@@ -156,13 +153,16 @@ class SupportUsState extends State<SupportUs> {
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(5),
                                           ),
-                                          color: Colors.white,
+                                          color: Theme.of(context).primaryColor,
                                           onPressed: () {
-                                            globals.launchURL(paypingURL);
+                                            globals.launchURL('https://www.radioramezan.com/riali.php');
                                           },
                                           child: Container(
                                             padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-                                            child: Image.asset('images/payping.png'),
+                                            child: Text(
+                                              'حمایت ریالی',
+                                              style: TextStyle(color: Colors.white),
+                                            ),
                                           ),
                                         ),
                                       ),
