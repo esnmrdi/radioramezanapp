@@ -113,51 +113,52 @@ class MainState extends State<Main> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-        top: false,
-        child: Container(
-          color: Colors.white,
-          margin:
-              kIsWeb && MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
-                  ? EdgeInsets.symmetric(
-                      horizontal: (MediaQuery.of(context).size.width -
-                              MediaQuery.of(context).size.height / globals.webAspectRatio) /
-                          2)
-                  : null,
-          child: ClipRRect(
-            child: Scaffold(
-              key: globals.mainScaffoldKey,
-              drawerEnableOpenDragGesture: false,
-              drawer: SideDrawer(),
-              body: SizedBox.expand(
-                child: PreloadPageView(
-                  preloadPagesCount: 4,
-                  controller: globals.pageController,
-                  physics: NeverScrollableScrollPhysics(),
-                  scrollDirection: Axis.horizontal,
-                  onPageChanged: (int index) {
-                    setState(() {
-                      globals.navigatorIndex = index;
-                    });
-                  },
-                  children: [
-                    Qibla(),
-                    Conductor(),
-                    HomePage(),
-                    Prayers(),
-                    AppSettings(),
-                  ],
-                ),
-              ),
-              bottomNavigationBar: Column(
-                mainAxisSize: MainAxisSize.min,
+      top: false,
+      child: Container(
+        color: Colors.white,
+        margin: kIsWeb &&
+                MediaQuery.of(context).size.width > MediaQuery.of(context).size.height / globals.webAspectRatio
+            ? EdgeInsets.symmetric(
+                horizontal:
+                    (MediaQuery.of(context).size.width - MediaQuery.of(context).size.height / globals.webAspectRatio) /
+                        2)
+            : null,
+        child: ClipRRect(
+          child: Scaffold(
+            key: globals.mainScaffoldKey,
+            drawerEnableOpenDragGesture: false,
+            drawer: SideDrawer(),
+            body: SizedBox.expand(
+              child: PreloadPageView(
+                preloadPagesCount: 4,
+                controller: globals.pageController,
+                physics: NeverScrollableScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                onPageChanged: (int index) {
+                  setState(() {
+                    globals.navigatorIndex = index;
+                  });
+                },
                 children: [
-                  RadioBar(),
-                  NavBar(),
-                  Advertisements(),
+                  Qibla(),
+                  Conductor(),
+                  HomePage(),
+                  Prayers(),
+                  AppSettings(),
                 ],
               ),
             ),
+            bottomNavigationBar: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioBar(),
+                NavBar(),
+                Advertisements(),
+              ],
+            ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
