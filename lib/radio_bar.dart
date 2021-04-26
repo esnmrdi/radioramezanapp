@@ -104,13 +104,17 @@ class RadioBarState extends State<RadioBar> with SingleTickerProviderStateMixin 
                 flex: 1,
                 child: IgnorePointer(
                   child: CarouselSlider.builder(
-                    itemCount: globals.currentAndNextItem.length,
+                    itemCount: globals.radioItemListToday.isNotEmpty ? globals.currentAndNextItem.length : 1,
                     options: CarouselOptions(
                       viewportFraction: 1,
                       initialPage: 0,
                       enableInfiniteScroll: true,
                       reverse: false,
-                      autoPlay: globals.currentAndNextItem.length < 2 ? false : true,
+                      autoPlay: globals.radioItemListToday.isNotEmpty
+                          ? globals.currentAndNextItem.length < 2
+                              ? false
+                              : true
+                          : false,
                       autoPlayInterval: Duration(seconds: 10),
                       autoPlayAnimationDuration: Duration(seconds: 1),
                       autoPlayCurve: Curves.fastOutSlowIn,
@@ -129,7 +133,7 @@ class RadioBarState extends State<RadioBar> with SingleTickerProviderStateMixin 
                                       globals.currentAndNextItem[index].description +
                                       ')'
                                   : globals.currentAndNextItem[index].title
-                              : 'آیتمی برای پخش وجود ندارد.',
+                              : 'پخش رادیو متوقف است.',
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: Container(
