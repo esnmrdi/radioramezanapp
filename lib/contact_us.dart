@@ -62,10 +62,18 @@ class ContactUsState extends State<ContactUs> {
       );
       final message = Message()
         ..from = Address(emailController.text)
-        ..recipients.add('esn.mrd@gmail.com')
-        ..ccRecipients.add('abbas.soltanian@gmail.com')
+        ..recipients.add('radio.ramezan@gmail.com')
+        ..ccRecipients.add('esn.mrd@gmail.com')
         ..subject = subjectValue
-        ..text = senderController.text + '\n' + messageController.text;
+        ..html = "<html dir='rtl'><body><p><b>نام فرستنده: </b>" +
+            senderController.text +
+            "</p><p><b>ایمیل فرستنده: </b>" +
+            emailController.text +
+            "</p><p><b>موضوع: </b>" +
+            subjectValue +
+            "</p><p><b>متن پیام: </b>" +
+            messageController.text +
+            "</p></body></html>";
 
       try {
         await send(message, smtpServer);
@@ -151,6 +159,7 @@ class ContactUsState extends State<ContactUs> {
       child: ClipRRect(
         child: Scaffold(
           key: contactUsScaffoldKey,
+          resizeToAvoidBottomInset: true,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Container(
             decoration: BoxDecoration(
@@ -193,7 +202,7 @@ class ContactUsState extends State<ContactUs> {
                                 Text(
                                   'ارتباط با ما',
                                   style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
