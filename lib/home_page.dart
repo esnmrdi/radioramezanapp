@@ -25,7 +25,7 @@ class HomePageState extends State<HomePage> {
   Paint sunPaint, horizonPaint, dayProgressPaint;
   Map<String, String> gregorianMonthNames;
   Map<String, String> hijriMonthNames;
-  double dayProgress;
+  double dayProgress, stretchRatio, horizonJunction;
 
   Offset calculateSunPosition(Path path, double value) {
     PathMetrics pathMetrics = path.computeMetrics();
@@ -36,17 +36,20 @@ class HomePageState extends State<HomePage> {
   }
 
   Path sunPath(Size size) {
+    stretchRatio = globals.owghat.dayLength / 1440;
+    horizonJunction = (1 - stretchRatio) / 2;
     Path path = Path();
     path.moveTo(0, .9 * size.height);
     path.cubicTo(
-      .25 * size.width,
+      horizonJunction * size.width,
       .9 * size.height,
-      .25 * size.width,
+      horizonJunction * size.width,
       .2 * size.height,
       .5 * size.width,
       .2 * size.height,
     );
-    path.cubicTo(.75 * size.width, .2 * size.height, .75 * size.width, 0.9 * size.height, size.width, .9 * size.height);
+    path.cubicTo((1 - horizonJunction) * size.width, .2 * size.height, (1 - horizonJunction) * size.width,
+        .9 * size.height, size.width, .9 * size.height);
     return path;
   }
 
