@@ -27,7 +27,19 @@ class Owghat {
       maghreb: parsedJson['maghreb'],
       dayLength: intl.DateFormat('HH:mm')
           .parse(parsedJson['maghreb'])
-          .difference(intl.DateFormat('HH:mm').parse(parsedJson['azan_sobh'])).inMinutes,
+          .difference(intl.DateFormat('HH:mm').parse(parsedJson['azan_sobh']))
+          .inMinutes,
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'sobh': sobh,
+      'sunrise': sunrise,
+      'zohr': zohr,
+      'sunset': sunset,
+      'maghreb': maghreb,
+      'dayLength': intl.DateFormat('HH:mm').parse(maghreb).difference(intl.DateFormat('HH:mm').parse(sobh)).inMinutes,
+    };
   }
 }
