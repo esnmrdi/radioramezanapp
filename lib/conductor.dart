@@ -183,7 +183,7 @@ class ConductorState extends State<Conductor> {
               )
             : globals.radioItemList.isEmpty
                 ? Center(
-                    child: Text('برنامه پخش رادیو خالی است.'),
+                    child: Text('پخش رادیو متوقف است.'),
                   )
                 : DraggableScrollbar.semicircle(
                     controller: scrollController,
