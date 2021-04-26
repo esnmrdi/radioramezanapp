@@ -170,7 +170,7 @@ class QiblaState extends State<Qibla> {
                     zoomGesturesEnabled: true,
                     rotateGesturesEnabled: false,
                     tiltGesturesEnabled: false,
-                    myLocationEnabled: true,
+                    myLocationEnabled: false,
                     myLocationButtonEnabled: false,
                     initialCameraPosition: montrealCameraPosition,
                     onMapCreated: (GoogleMapController controller) {
