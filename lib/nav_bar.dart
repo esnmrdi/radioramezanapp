@@ -25,7 +25,7 @@ class NavBar extends StatelessWidget {
           tabs: [
             GButton(
               icon: CupertinoIcons.compass,
-              text: 'قبله',
+              text: 'قبله نما',
               iconColor: Colors.white,
             ),
             GButton(
@@ -40,12 +40,12 @@ class NavBar extends StatelessWidget {
             ),
             GButton(
               icon: CupertinoIcons.book,
-              text: 'دعا',
+              text: 'مناجات',
               iconColor: Colors.white,
             ),
             GButton(
               icon: CupertinoIcons.gear,
-              text: 'تنظیم',
+              text: 'تنظیمات',
               iconColor: Colors.white,
             ),
           ],
