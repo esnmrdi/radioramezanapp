@@ -1,4 +1,6 @@
 // loading required packages
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -6,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:radioramezan/globals.dart';
 import 'package:radioramezan/about_us.dart';
+import 'package:radioramezan/support_us.dart';
 import 'package:radioramezan/contact_us.dart';
 import 'package:radioramezan/monthly_owghat.dart';
 
@@ -83,7 +86,11 @@ class SideDrawer extends StatelessWidget {
               onTap: () {
                 globals.mainScaffoldKey.currentState.openEndDrawer();
                 Share.share(
-                  'https://m.radioramezan.com',
+                  kIsWeb
+                      ? 'https://m.radioramezan.com'
+                      : Platform.isAndroid
+                          ? 'https://play.google.com/store/apps/details?id=com.radioramezan.radioramezan'
+                          : 'https://apps.apple.com/ca/app/radio-ramezan/id1562189436',
                   subject: 'رادیو رمضان، همراه روزهای پر از معنویت شما',
                 );
               },
@@ -104,6 +111,27 @@ class SideDrawer extends StatelessWidget {
                   () {
                     Navigator.of(context).push(
                       globals.createRoute(AboutUs()),
+                    );
+                  },
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(CupertinoIcons.gift),
+              title: Text(
+                'حمایت از رادیو',
+                style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+              trailing: Icon(Icons.arrow_right),
+              onTap: () {
+                globals.mainScaffoldKey.currentState.openEndDrawer();
+                Future.delayed(
+                  Duration(milliseconds: 250),
+                  () {
+                    Navigator.of(context).push(
+                      globals.createRoute(SupportUs()),
                     );
                   },
                 );
