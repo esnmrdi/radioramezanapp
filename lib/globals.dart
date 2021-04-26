@@ -13,6 +13,7 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cron/cron.dart';
+import 'package:workmanager/workmanager.dart';
 import 'package:radioramezan/data_models/city_model.dart';
 import 'package:radioramezan/data_models/owghat_model.dart';
 import 'package:radioramezan/data_models/radio_item_model.dart';
@@ -32,7 +33,6 @@ class Globals {
   List<RadioItem> radioItemListToday = [];
   List<RadioItem> radioItemListYesterday = [];
   List<RadioItem> currentAndNextItem;
-  List<Prayer> prayerList = [];
   City city;
   Owghat owghat;
   String jalaliDate, gregorianDate, hijriDate, smtpUsername, smtpPassword;
@@ -45,8 +45,11 @@ class Globals {
       owghatMethodIsUpdating;
   Metas metas;
   Cron liveCron = Cron();
-  Timer twoMinBeforeSobh, fiveMinBeforeSobh, tenMinBeforeSobh, twentyMinBeforeSobh;
   double webAspectRatio, adAspectRatio;
+  Map<String, List<Prayer>> sources;
+  Timer twoMinBeforeSobh, fiveMinBeforeSobh, tenMinBeforeSobh, twentyMinBeforeSobh;
+  Workmanager workmanager;
+  Map<String, int> azanSobhNotificationTasks;
 
   Future<Null> fetchCityList() async {
     final response = await get(Uri.parse('https://m.radioramezan.com/api/cities.php'));
@@ -148,10 +151,12 @@ class Globals {
     }
   }
 
-  Future<Null> loadPrayerList() async {
+  Future<Null> loadSources() async {
     final response = await rootBundle.loadString('texts/prayers.json');
-    prayerList.clear();
-    prayerList = (json.decode(response) as List).map((i) => Prayer.fromJson(i)).toList();
+    Map<String, dynamic> sourcesInitial = json.decode(response);
+    sourcesInitial.forEach((key, value) {
+      sources.putIfAbsent(key, () => (value as List<dynamic>).map((item) => Prayer.fromJson(item)).toList());
+    });
   }
 
   Future<Null> loadRadio() async {
@@ -164,11 +169,14 @@ class Globals {
           Audio.liveStream(city.url, metas: metas),
           autoStart: false,
           respectSilentMode: false,
-          showNotification: false,
-          // notificationSettings: NotificationSettings(
-          //   playPauseEnabled: true,
-          //   seekBarEnabled: true,
-          // ),
+          showNotification: true,
+          notificationSettings: NotificationSettings(
+            playPauseEnabled: false,
+            nextEnabled: false,
+            prevEnabled: false,
+            stopEnabled: false,
+            seekBarEnabled: false,
+          ),
           playInBackground: PlayInBackground.enabled,
           headPhoneStrategy: HeadPhoneStrategy.none,
         );
@@ -250,6 +258,32 @@ class Globals {
     return [radioItemListYesterday.last, radioItemListToday.first];
   }
 
+  void callbackDispatcher() {
+    workmanager.executeTask((task, inputData) async {
+      loadAzanNotificationAudio(fixPath('audios/azan_alert_' + task + '.mp3'));
+      return Future.value(true);
+    });
+  }
+
+  void setAzanSobhNotificationTasks() async {
+    await workmanager.cancelAll();
+    workmanager.initialize(
+      callbackDispatcher,
+    );
+    DateTime sobh = DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + owghat.sobh);
+    azanSobhNotificationTasks.keys.forEach((element) {
+      Duration nowToEventDiff =
+          sobh.subtract(Duration(minutes: azanSobhNotificationTasks[element])).difference(DateTime.now());
+      if (nowToEventDiff > Duration.zero) {
+        workmanager.registerOneOffTask(
+          element,
+          element,
+          initialDelay: nowToEventDiff,
+        );
+      }
+    });
+  }
+
   void setAzanNotificationTimers() {
     if (twoMinBeforeSobh != null) {
       twoMinBeforeSobh.cancel();
@@ -258,30 +292,26 @@ class Globals {
       twentyMinBeforeSobh.cancel();
     }
     DateTime sobh = DateTime.parse(intl.DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + owghat.sobh);
-    twoMinBeforeSobh = Timer(
-      sobh.subtract(Duration(minutes: 2)).difference(
-            DateTime.now(),
-          ),
-      () => loadAzanNotificationAudio(fixPath('audios/azan_alert_2.mp3')),
-    );
-    fiveMinBeforeSobh = Timer(
-      sobh.subtract(Duration(minutes: 5)).difference(
-            DateTime.now(),
-          ),
-      () => loadAzanNotificationAudio(fixPath('audios/azan_alert_5.mp3')),
-    );
-    tenMinBeforeSobh = Timer(
-      sobh.subtract(Duration(minutes: 10)).difference(
-            DateTime.now(),
-          ),
-      () => loadAzanNotificationAudio(fixPath('audios/azan_alert_10.mp3')),
-    );
-    twentyMinBeforeSobh = Timer(
-      sobh.subtract(Duration(minutes: 20)).difference(
-            DateTime.now(),
-          ),
-      () => loadAzanNotificationAudio(fixPath('audios/azan_alert_20.mp3')),
-    );
+    Duration nowToTwoMinutesBeforeSobhDiff = sobh.subtract(Duration(minutes: 2)).difference(DateTime.now());
+    if (nowToTwoMinutesBeforeSobhDiff > Duration.zero) {
+      twoMinBeforeSobh =
+          Timer(nowToTwoMinutesBeforeSobhDiff, () => loadAzanNotificationAudio(fixPath('audios/azan_alert_two.mp3')));
+    }
+    Duration nowToFiveMinutesBeforeSobhDiff = sobh.subtract(Duration(minutes: 5)).difference(DateTime.now());
+    if (nowToFiveMinutesBeforeSobhDiff > Duration.zero) {
+      fiveMinBeforeSobh =
+          Timer(nowToFiveMinutesBeforeSobhDiff, () => loadAzanNotificationAudio(fixPath('audios/azan_alert_five.mp3')));
+    }
+    Duration nowToTenMinutesBeforeSobhDiff = sobh.subtract(Duration(minutes: 10)).difference(DateTime.now());
+    if (nowToTenMinutesBeforeSobhDiff > Duration.zero) {
+      tenMinBeforeSobh =
+          Timer(nowToTenMinutesBeforeSobhDiff, () => loadAzanNotificationAudio(fixPath('audios/azan_alert_ten.mp3')));
+    }
+    Duration nowToTwentyMinutesBeforeSobhDiff = sobh.subtract(Duration(minutes: 20)).difference(DateTime.now());
+    if (nowToTwentyMinutesBeforeSobhDiff > Duration.zero) {
+      twentyMinBeforeSobh =
+          Timer(nowToTwentyMinutesBeforeSobhDiff, () => loadAzanNotificationAudio(fixPath('audios/azan_alert_twenty.mp3')));
+    }
   }
 
   Route createRoute(Widget newPage) {
@@ -308,6 +338,7 @@ class Globals {
       fetchOwghat(),
       fetchOwghatList(),
     ]);
+    // setAzanSobhNotificationTasks();
     setAzanNotificationTimers();
   }
 
@@ -367,10 +398,13 @@ class Globals {
     );
     webAspectRatio = 1.5;
     adAspectRatio = 6.4;
+    sources = {};
+    workmanager = Workmanager();
+    azanSobhNotificationTasks = {'two': 2, 'five': 5, 'ten': 10, 'twenty': 20};
     await fetchCityList();
     await Future.wait([
       cityChangeUpdate(),
-      loadPrayerList(),
+      loadSources(),
     ]);
     currentAndNextItem = findCurrentAndNextItem();
     liveCron.schedule(Schedule.parse('*/1 * * * *'), () async {
