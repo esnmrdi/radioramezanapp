@@ -1,3 +1,3 @@
-# radioramezan
+# radioramezanapp
 
-An online streaming radio service for Iranians living abroad
+A streaming radio service during Ramadan for Iranians living abroad
